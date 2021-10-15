@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var TcpAddress = flag.String("tp_tcp_addr", "127.0.0.1:13500", "tcp addr of throughput server")
+var TcpAddress = flag.String("tp_tcp_addr", ":13500", "tcp addr of throughput server")
 var UnixAddress = flag.String("tp_uds_addr", "/tmp/tp_benchmark.sock", "uds addr of throughput server")
 
 var MsgSize = flag.Int("tp_msgsize", 256*1024, "Size of each message")
@@ -24,7 +24,6 @@ func DomainAndAddress() (func(string, string) (net.Conn, error), string, string)
 	} else {
 		dialer := &net.Dialer{
 			LocalAddr: &net.TCPAddr{
-				IP:   net.ParseIP("127.0.0.1"),
 				Port: 13503,
 			},
 		}

@@ -12,7 +12,7 @@ import (
 var MsgSize = flag.Int("lat_msgsize", 128, "Message size in each ping")
 var NumPings = flag.Int("lat_numping", 50000, "Number of pings to measure")
 
-var TcpAddress = flag.String("lat_tcp_addr", "127.0.0.1:13501", "tcp addr of latency server")
+var TcpAddress = flag.String("lat_tcp_addr", ":13501", "tcp addr of latency server")
 var UnixAddress = flag.String("lat_uds_addr", "/tmp/lat_benchmark.sock", "uds addr of latency server")
 
 // DomainAndAddress returns the domain,address pair for net functions to connect
@@ -23,7 +23,6 @@ func DomainAndAddress() (func(string, string) (net.Conn, error), string, string)
 	} else {
 		dialer := &net.Dialer{
 			LocalAddr: &net.TCPAddr{
-				IP:   net.ParseIP("127.0.0.1"),
 				Port: 13504,
 			},
 		}
