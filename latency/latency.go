@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/pratikdeoghare/benchmate"
+	"log"
 	"net"
 	"os"
 	"time"
@@ -12,22 +13,22 @@ import (
 var MsgSize = flag.Int("lat_msgsize", 128, "Message size in each ping")
 var NumPings = flag.Int("lat_numping", 50000, "Number of pings to measure")
 
-var TcpAddress = "127.0.0.1:13501"
-var UnixAddress = "/tmp/lat_benchmark.sock"
+var TcpAddress = flag.String("lat_tcp_addr", "127.0.0.1:13501", "tcp addr of latency server")
+var UnixAddress = flag.String("lat_uds_addr", "/tmp/lat_benchmark.sock", "uds addr of latency server")
 
 // DomainAndAddress returns the domain,address pair for net functions to connect
 // to, depending on the value of the UnixDomain flag.
 func DomainAndAddress() (string, string) {
 	if *benchmate.UnixDomain {
-		return "unix", UnixAddress
+		return "unix", *UnixAddress
 	} else {
-		return "tcp", TcpAddress
+		return "tcp", *TcpAddress
 	}
 }
 
 func Server() error {
 	if *benchmate.UnixDomain {
-		if err := os.RemoveAll(UnixAddress); err != nil {
+		if err := os.RemoveAll(*UnixAddress); err != nil {
 			panic(err)
 		}
 	}
@@ -44,6 +45,8 @@ func Server() error {
 		return err
 	}
 	defer conn.Close()
+
+	log.Println("connected ", conn.LocalAddr(), conn.RemoteAddr())
 
 	buf := make([]byte, *MsgSize)
 	for n := 0; n < *NumPings; n++ {

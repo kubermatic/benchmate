@@ -4,13 +4,14 @@ import (
 	"flag"
 	"fmt"
 	"github.com/pratikdeoghare/benchmate"
+	"log"
 	"net"
 	"os"
 	"time"
 )
 
-var TcpAddress = "127.0.0.1:13500"
-var UnixAddress = "/tmp/tp_benchmark.sock"
+var TcpAddress = flag.String("tp_tcp_addr", "127.0.0.1:13500", "tcp addr of throughput server")
+var UnixAddress = flag.String("tp_uds_addr", "/tmp/tp_benchmark.sock", "uds addr of throughput server")
 
 var MsgSize = flag.Int("tp_msgsize", 256*1024, "Size of each message")
 var NumMsg = flag.Int("tp_nummsg", 10000, "Number of messages to send")
@@ -19,15 +20,15 @@ var NumMsg = flag.Int("tp_nummsg", 10000, "Number of messages to send")
 // to, depending on the value of the benchmate.UnixDomain flag.
 func DomainAndAddress() (string, string) {
 	if *benchmate.UnixDomain {
-		return "unix", UnixAddress
+		return "unix", *UnixAddress
 	} else {
-		return "tcp", TcpAddress
+		return "tcp", *TcpAddress
 	}
 }
 
 func Server() error {
 	if *benchmate.UnixDomain {
-		if err := os.RemoveAll(UnixAddress); err != nil {
+		if err := os.RemoveAll(*UnixAddress); err != nil {
 			panic(err)
 		}
 	}
@@ -44,6 +45,8 @@ func Server() error {
 		return err
 	}
 	defer conn.Close()
+
+	log.Println("connected ", conn.LocalAddr(), conn.RemoteAddr())
 
 	buf := make([]byte, *MsgSize)
 	for {
