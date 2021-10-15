@@ -18,11 +18,18 @@ var NumMsg = flag.Int("tp_nummsg", 10000, "Number of messages to send")
 
 // DomainAndAddress returns the domain,address pair for net functions to connect
 // to, depending on the value of the benchmate.UnixDomain flag.
-func DomainAndAddress() (string, string) {
+func DomainAndAddress() (func(string, string) (net.Conn, error), string, string) {
 	if *benchmate.UnixDomain {
-		return "unix", *UnixAddress
+		return net.Dial, "unix", *UnixAddress
 	} else {
-		return "tcp", *TcpAddress
+		dialer := &net.Dialer{
+			LocalAddr: &net.TCPAddr{
+				IP:   net.ParseIP("127.0.0.1"),
+				Port: 13503,
+			},
+		}
+
+		return dialer.Dial, "tcp", *TcpAddress
 	}
 }
 
@@ -33,7 +40,7 @@ func Server() error {
 		}
 	}
 
-	domain, address := DomainAndAddress()
+	_, domain, address := DomainAndAddress()
 	l, err := net.Listen(domain, address)
 	if err != nil {
 		return err
@@ -64,16 +71,10 @@ func Server() error {
 }
 
 func Client() error {
-	dialer := &net.Dialer{
-		LocalAddr: &net.TCPAddr{
-			IP:   net.ParseIP("127.0.0.1"),
-			Port: 13502,
-		},
-	}
 
 	// This is the Client code in the main goroutine.
-	domain, address := DomainAndAddress()
-	conn, err := dialer.Dial(domain, address)
+	dial, domain, address := DomainAndAddress()
+	conn, err := dial(domain, address)
 	if err != nil {
 		return err
 	}

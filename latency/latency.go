@@ -6,7 +6,6 @@ import (
 	"github.com/pratikdeoghare/benchmate"
 	"log"
 	"net"
-	"os"
 	"time"
 )
 
@@ -17,23 +16,23 @@ var TcpAddress = flag.String("lat_tcp_addr", "127.0.0.1:13501", "tcp addr of lat
 var UnixAddress = flag.String("lat_uds_addr", "/tmp/lat_benchmark.sock", "uds addr of latency server")
 
 // DomainAndAddress returns the domain,address pair for net functions to connect
-// to, depending on the value of the UnixDomain flag.
-func DomainAndAddress() (string, string) {
+// to, depending on the value of the benchmate.UnixDomain flag.
+func DomainAndAddress() (func(string, string) (net.Conn, error), string, string) {
 	if *benchmate.UnixDomain {
-		return "unix", *UnixAddress
+		return net.Dial, "unix", *UnixAddress
 	} else {
-		return "tcp", *TcpAddress
+		dialer := &net.Dialer{
+			LocalAddr: &net.TCPAddr{
+				IP:   net.ParseIP("127.0.0.1"),
+				Port: 13504,
+			},
+		}
+
+		return dialer.Dial, "tcp", *TcpAddress
 	}
 }
-
 func Server() error {
-	if *benchmate.UnixDomain {
-		if err := os.RemoveAll(*UnixAddress); err != nil {
-			panic(err)
-		}
-	}
-
-	domain, address := DomainAndAddress()
+	_, domain, address := DomainAndAddress()
 	l, err := net.Listen(domain, address)
 	if err != nil {
 		return err
@@ -71,15 +70,9 @@ func Server() error {
 }
 
 func Client() error {
-	dialer := &net.Dialer{
-		LocalAddr: &net.TCPAddr{
-			IP:   net.ParseIP("127.0.0.1"),
-			Port: 13503,
-		},
-	}
 	// This is the client code in the main goroutine.
-	domain, address := DomainAndAddress()
-	conn, err := dialer.Dial(domain, address)
+	dial, domain, address := DomainAndAddress()
+	conn, err := dial(domain, address)
 	if err != nil {
 		return err
 	}
