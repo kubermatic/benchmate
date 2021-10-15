@@ -71,9 +71,15 @@ func Server() error {
 }
 
 func Client() error {
+	dialer := &net.Dialer{
+		LocalAddr: &net.TCPAddr{
+			IP:   net.ParseIP("127.0.0.1"),
+			Port: 13503,
+		},
+	}
 	// This is the client code in the main goroutine.
 	domain, address := DomainAndAddress()
-	conn, err := net.Dial(domain, address)
+	conn, err := dialer.Dial(domain, address)
 	if err != nil {
 		return err
 	}
