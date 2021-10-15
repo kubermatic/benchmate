@@ -70,6 +70,7 @@ func Server() error {
 }
 
 func Client() error {
+	log.Println("latency client running")
 	// This is the client code in the main goroutine.
 	dial, domain, address := DomainAndAddress()
 	conn, err := dial(domain, address)

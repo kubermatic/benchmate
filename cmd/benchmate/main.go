@@ -8,16 +8,18 @@ import (
 	"sync"
 )
 
-
 func RunClients() {
+
 	err := throughput.Client()
 	if err != nil {
 		log.Println(err)
 	}
+	
 	err = latency.Client()
 	if err != nil {
 		log.Println(err)
 	}
+
 }
 
 func RunServers() {
