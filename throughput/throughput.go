@@ -69,6 +69,31 @@ func Server() error {
 	return nil
 }
 
+func ClientConn(conn net.Conn) error {
+	buf := make([]byte, *MsgSize)
+	t1 := time.Now()
+	for n := 0; n < *NumMsg; n++ {
+		nwrite, err := conn.Write(buf)
+		if err != nil {
+			return err
+		}
+		if nwrite != *MsgSize {
+			return fmt.Errorf("bad nwrite = %d")
+		}
+	}
+	elapsed := time.Since(t1)
+
+	totaldata := int64(*NumMsg * *MsgSize)
+	fmt.Println("Client done")
+	fmt.Printf("Sent %d msg in %d ns; throughput %d msg/sec (%d MB/sec)\n",
+		*NumMsg, elapsed,
+		(int64(*NumMsg)*1000000000)/elapsed.Nanoseconds(),
+		(totaldata*1000)/elapsed.Nanoseconds())
+
+	time.Sleep(50 * time.Millisecond)
+	return nil
+}
+
 func Client() error {
 
 	// This is the Client code in the main goroutine.

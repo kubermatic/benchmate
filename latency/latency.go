@@ -68,6 +68,37 @@ func Server() error {
 	return nil
 }
 
+func ClientConn(conn net.Conn) error {
+	buf := make([]byte, *MsgSize)
+	t1 := time.Now()
+	for n := 0; n < *NumPings; n++ {
+		nwrite, err := conn.Write(buf)
+		if err != nil {
+			return err
+		}
+		if nwrite != *MsgSize {
+			return fmt.Errorf("bad nwrite = %d", nwrite)
+		}
+		nread, err := conn.Read(buf)
+		if err != nil {
+			return err
+		}
+		if nread != *MsgSize {
+			return fmt.Errorf("bad nread = %d", nread)
+		}
+	}
+	elapsed := time.Since(t1)
+
+	totalpings := int64(*NumPings * 2)
+	fmt.Println("Client done")
+	fmt.Printf("%d pingpongs took %d ns; avg. latency %d ns\n",
+		totalpings, elapsed.Nanoseconds(),
+		elapsed.Nanoseconds()/totalpings)
+
+	time.Sleep(50 * time.Millisecond)
+	return nil
+}
+
 func Client() error {
 	log.Println("latency client running")
 	// This is the client code in the main goroutine.

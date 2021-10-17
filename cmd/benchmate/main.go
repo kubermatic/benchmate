@@ -6,15 +6,20 @@ import (
 	"github.com/pratikdeoghare/benchmate/throughput"
 	"log"
 	"sync"
+	"time"
 )
 
 func RunClients() {
+
+	log.Println("sleeping 30s zzz...")
+	time.Sleep(30 *time.Second)
+	log.Println("up and running...")
 
 	err := throughput.Client()
 	if err != nil {
 		log.Println(err)
 	}
-	
+
 	err = latency.Client()
 	if err != nil {
 		log.Println(err)
