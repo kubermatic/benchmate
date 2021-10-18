@@ -2,18 +2,27 @@ package main
 
 import (
 	"context"
+	"flag"
 	"fmt"
+	"github.com/pratikdeoghare/benchmate/latency"
+	"github.com/pratikdeoghare/benchmate/throughput"
 	"google.golang.org/grpc"
 	"k8s.io/klog/v2"
 	"log"
 	"net"
 	"sigs.k8s.io/apiserver-network-proxy/konnectivity-client/pkg/client"
-	"github.com/pratikdeoghare/benchmate/throughput"
-	"github.com/pratikdeoghare/benchmate/latency"
 )
 
 func main() {
-	proxyUDSName := "/tmp/uds-proxy"
+
+	var proxyUDSName string
+	flag.StringVar(&proxyUDSName, "proxy-uds", "/etc/kubernetes/konnectivity-server/konnectivity-server.socket", "uds socket name of konnectivity proxy")
+
+	var nodeIP string
+	flag.StringVar(&nodeIP, "node-ip", "127.0.0.1", "ip of node where benchmate server is running")
+
+	flag.Parse()
+
 	dialOption := grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 		// Ignoring addr and timeout arguments:
 		// addr - comes from the closure
@@ -30,7 +39,7 @@ func main() {
 		panic(err)
 	}
 
-	requestAddress := fmt.Sprintf("%s:%d", "127.0.0.1", 13500)
+	requestAddress := fmt.Sprintf("%s:%d", nodeIP, 13500)
 	proxyConn, err := tunnel.DialContext(ctx, "tcp", requestAddress)
 	if err != nil {
 		panic(err)
@@ -42,7 +51,7 @@ func main() {
 		log.Println(err)
 	}
 
-	requestAddress = fmt.Sprintf("%s:%d", "127.0.0.1", 13501)
+	requestAddress = fmt.Sprintf("%s:%d", nodeIP, 13501)
 	proxyConn, err = tunnel.DialContext(ctx, "tcp", requestAddress)
 	if err != nil {
 		panic(err)
