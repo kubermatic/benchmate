@@ -33,6 +33,7 @@
   with Konnectivity proxy.
 - It uses the code from `throughput` and `latency` packages for creating clients and calculation of the stats. The same
   code is used by `benchmark -c`.
+- So you run `benchmate` server on a node and you run `uds-benchmate` somewhere else. You will get stats if `uds-benchmate` client can get connection to Konnectivity proxy.
 
 ## Packages
 
