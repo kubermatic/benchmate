@@ -2,19 +2,13 @@ package main
 
 import (
 	"flag"
-	"github.com/pratikdeoghare/benchmate/latency"
-	"github.com/pratikdeoghare/benchmate/throughput"
+	"github.com/kubermatic/benchmate/latency"
+	"github.com/kubermatic/benchmate/throughput"
 	"log"
 	"sync"
-	"time"
 )
 
 func RunClients() {
-
-	log.Println("sleeping 30s zzz...")
-	time.Sleep(30 *time.Second)
-	log.Println("up and running...")
-
 	err := throughput.Client()
 	if err != nil {
 		log.Println(err)
@@ -24,7 +18,6 @@ func RunClients() {
 	if err != nil {
 		log.Println(err)
 	}
-
 }
 
 func RunServers() {

@@ -1,4 +1,4 @@
-module github.com/pratikdeoghare/benchmate
+module github.com/kubermatic/benchmate
 
 go 1.17
 

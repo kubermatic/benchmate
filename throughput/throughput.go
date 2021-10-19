@@ -3,7 +3,7 @@ package throughput
 import (
 	"flag"
 	"fmt"
-	"github.com/pratikdeoghare/benchmate"
+	"github.com/kubermatic/benchmate"
 	"log"
 	"net"
 	"os"
@@ -11,7 +11,7 @@ import (
 )
 
 var TcpAddress = flag.String("tp_tcp_addr", ":13500", "tcp addr of throughput server")
-var UnixAddress = flag.String("tp_uds_addr", "/tmp/tp_benchmark.sock", "uds addr of throughput server")
+var UnixAddress = flag.String("tp_uds_addr", "/tmp/tp_benchmark.sock", "uds-benchmate addr of throughput server")
 
 var MsgSize = flag.Int("tp_msgsize", 256*1024, "Size of each message")
 var NumMsg = flag.Int("tp_nummsg", 10000, "Number of messages to send")
@@ -103,27 +103,5 @@ func Client() error {
 		return err
 	}
 	defer conn.Close()
-
-	buf := make([]byte, *MsgSize)
-	t1 := time.Now()
-	for n := 0; n < *NumMsg; n++ {
-		nwrite, err := conn.Write(buf)
-		if err != nil {
-			return err
-		}
-		if nwrite != *MsgSize {
-			return fmt.Errorf("bad nwrite = %d")
-		}
-	}
-	elapsed := time.Since(t1)
-
-	totaldata := int64(*NumMsg * *MsgSize)
-	fmt.Println("Client done")
-	fmt.Printf("Sent %d msg in %d ns; throughput %d msg/sec (%d MB/sec)\n",
-		*NumMsg, elapsed,
-		(int64(*NumMsg)*1000000000)/elapsed.Nanoseconds(),
-		(totaldata*1000)/elapsed.Nanoseconds())
-
-	time.Sleep(50 * time.Millisecond)
-	return nil
+	return ClientConn(conn)
 }
