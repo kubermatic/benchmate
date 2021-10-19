@@ -20,20 +20,20 @@
     - Fixing the ports make it easy to debug using tcpdump. Also, we have to expose only fixed ports if needed.
     - We get results comparable to qperf. See ![screenshot](./benchmateVSqperf.png).
 
-## uds-benchmate
+## konnectivity-benchmate
 
-- You can get `uds-benchmate` by
+- You can get `konnectivity-benchmate` by
 
 ```
-    cd cmd/uds-benchmate/
-    go build -o uds-benchmate
+    cd cmd/konnectivity-benchmate/
+    go build -o konnectivity-benchmate
 ```
 
-- `benchmate -c` client doesn't work with Konnectivity. So this `uds-benchmate` is a `benchmate` client designed to work
+- `benchmate -c` client doesn't work with Konnectivity. So this `konnectivity-benchmate` is a `benchmate` client designed to work
   with Konnectivity proxy.
 - It uses the code from `throughput` and `latency` packages for creating clients and calculation of the stats. The same
   code is used by `benchmark -c`.
-- So you run `benchmate` server on a node and you run `uds-benchmate` somewhere else. You will get stats if `uds-benchmate` client can get connection to Konnectivity proxy.
+- So you run `benchmate` server on a node and you run `konnectivity-benchmate` somewhere else. You will get stats if `konnectivity-benchmate` client can get connection to Konnectivity proxy.
 
 ## Packages
 

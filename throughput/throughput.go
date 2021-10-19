@@ -11,7 +11,7 @@ import (
 )
 
 var TcpAddress = flag.String("tp_tcp_addr", ":13500", "tcp addr of throughput server")
-var UnixAddress = flag.String("tp_uds_addr", "/tmp/tp_benchmark.sock", "uds-benchmate addr of throughput server")
+var UnixAddress = flag.String("tp_uds_addr", "/tmp/tp_benchmark.sock", "konnectivity-benchmate addr of throughput server")
 
 var MsgSize = flag.Int("tp_msgsize", 256*1024, "Size of each message")
 var NumMsg = flag.Int("tp_nummsg", 10000, "Number of messages to send")

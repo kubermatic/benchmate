@@ -13,7 +13,7 @@ var MsgSize = flag.Int("lat_msgsize", 128, "Message size in each ping")
 var NumPings = flag.Int("lat_numping", 50000, "Number of pings to measure")
 
 var TcpAddress = flag.String("lat_tcp_addr", ":13501", "tcp addr of latency server")
-var UnixAddress = flag.String("lat_uds_addr", "/tmp/lat_benchmark.sock", "uds-benchmate addr of latency server")
+var UnixAddress = flag.String("lat_uds_addr", "/tmp/lat_benchmark.sock", "konnectivity-benchmate addr of latency server")
 
 // DomainAndAddress returns the domain,address pair for net functions to connect
 // to, depending on the value of the benchmate.UnixDomain flag.
