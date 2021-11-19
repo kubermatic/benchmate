@@ -41,8 +41,13 @@ func statsHandler(w http.ResponseWriter, r *http.Request) {
 	if req.Throughput {
 		if req.Server {
 			log.Println("running throughput server")
+			opt := throughput.DefaultOptions()
+			err := json.NewEncoder(w).Encode(opt)
+			if err != nil {
+				panic(err)
+			}
 			go func() {
-				err := throughput.NewThroughputMeter(throughput.DefaultOptions()).Server()
+				err = throughput.NewThroughputMeter(opt).Server()
 				if err != nil {
 					log.Println(err)
 				}
@@ -67,8 +72,13 @@ func statsHandler(w http.ResponseWriter, r *http.Request) {
 	if req.Latency {
 		if req.Server {
 			log.Println("running latency server")
+			opt := latency.DefaultOptions()
+			err := json.NewEncoder(w).Encode(opt)
+			if err != nil {
+				panic(err)
+			}
 			go func() {
-				err := latency.NewLatencyMeter(latency.DefaultOptions()).Server()
+				err = latency.NewLatencyMeter(opt).Server()
 				if err != nil {
 					log.Println(err)
 				}
@@ -87,7 +97,6 @@ func statsHandler(w http.ResponseWriter, r *http.Request) {
 				if err != nil {
 					log.Println(err)
 				}
-
 			}()
 		}
 	}

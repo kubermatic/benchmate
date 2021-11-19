@@ -28,7 +28,9 @@ func RunServers() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		err := throughput.NewThroughputMeter(throughput.DefaultOptions()).Server()
+		opt := throughput.DefaultOptions()
+		log.Println("throughput server running with: %s", opt)
+		err := throughput.NewThroughputMeter(opt).Server()
 		if err != nil {
 			log.Println("throughput server: ", err)
 		}
@@ -36,7 +38,9 @@ func RunServers() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		err := latency.NewLatencyMeter(latency.DefaultOptions()).Server()
+		opt := latency.DefaultOptions()
+		log.Println("latency server running with: %s", opt)
+		err := latency.NewLatencyMeter(opt).Server()
 		if err != nil {
 			log.Println("latency server: ", err)
 		}
