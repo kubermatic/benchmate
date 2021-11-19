@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"github.com/kubermatic/benchmate/latency"
 	"github.com/kubermatic/benchmate/throughput"
 	"log"
@@ -9,15 +10,17 @@ import (
 )
 
 func RunClients() {
-	err := throughput.Client()
+	tpResult, err := throughput.NewThroughputMeter(throughput.DefaultOptions()).Client()
 	if err != nil {
 		log.Println(err)
 	}
+	fmt.Println(tpResult)
 
-	err = latency.Client()
+	latResult, err := latency.NewLatencyMeter(latency.DefaultOptions()).Client()
 	if err != nil {
 		log.Println(err)
 	}
+	fmt.Println(latResult)
 }
 
 func RunServers() {
@@ -25,7 +28,7 @@ func RunServers() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		err := throughput.Server()
+		err := throughput.NewThroughputMeter(throughput.DefaultOptions()).Server()
 		if err != nil {
 			log.Println("throughput server: ", err)
 		}
@@ -33,7 +36,7 @@ func RunServers() {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		err := latency.Server()
+		err := latency.NewLatencyMeter(latency.DefaultOptions()).Server()
 		if err != nil {
 			log.Println("latency server: ", err)
 		}

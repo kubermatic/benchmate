@@ -1,25 +1,51 @@
 package latency
 
 import (
-	"flag"
 	"fmt"
-	"github.com/kubermatic/benchmate"
 	"log"
 	"net"
 	"time"
 )
 
-var MsgSize = flag.Int("lat_msgsize", 128, "Message size in each ping")
-var NumPings = flag.Int("lat_numping", 50000, "Number of pings to measure")
+type Options struct {
+	MsgSize     int    `json:"msgSize"`
+	NumPings    int    `json:"numPings"`
+	TcpAddress  string `json:"tcpAddress"`
+	UnixAddress string `json:"unixAddress"`
+	UnixDomain  bool   `json:"unixDomain"`
+}
 
-var TcpAddress = flag.String("lat_tcp_addr", ":13501", "tcp addr of latency server")
-var UnixAddress = flag.String("lat_uds_addr", "/tmp/lat_benchmark.sock", "konnectivity-benchmate addr of latency server")
+func DefaultOptions() Options {
+	return Options{
+		MsgSize:     128,
+		NumPings:    50000,
+		TcpAddress:  ":13501",
+		UnixAddress: "/tmp/lat_benchmark.sock",
+		UnixDomain:  false,
+	}
+}
+
+type Result struct {
+	ElapsedTime time.Duration `json:"elapsedTime"`
+	NumPings    int           `json:"numPings"`
+	AvgLatency  time.Duration `json:"AvgLatency"`
+}
+
+type latencyMeter struct {
+	Options
+}
+
+func NewLatencyMeter(options Options) *latencyMeter {
+	return &latencyMeter{
+		Options: options,
+	}
+}
 
 // DomainAndAddress returns the domain,address pair for net functions to connect
 // to, depending on the value of the benchmate.UnixDomain flag.
-func DomainAndAddress() (func(string, string) (net.Conn, error), string, string) {
-	if *benchmate.UnixDomain {
-		return net.Dial, "unix", *UnixAddress
+func (lm *latencyMeter) DomainAndAddress() (func(string, string) (net.Conn, error), string, string) {
+	if lm.UnixDomain {
+		return net.Dial, "unix", lm.UnixAddress
 	} else {
 		dialer := &net.Dialer{
 			LocalAddr: &net.TCPAddr{
@@ -27,12 +53,12 @@ func DomainAndAddress() (func(string, string) (net.Conn, error), string, string)
 			},
 		}
 
-		return dialer.Dial, "tcp", *TcpAddress
+		return dialer.Dial, "tcp", lm.TcpAddress
 	}
 }
 
-func Server() error {
-	_, domain, address := DomainAndAddress()
+func (lm *latencyMeter) Server() error {
+	_, domain, address := lm.DomainAndAddress()
 	l, err := net.Listen(domain, address)
 	if err != nil {
 		return err
@@ -47,67 +73,65 @@ func Server() error {
 
 	log.Println("connected ", conn.LocalAddr(), conn.RemoteAddr())
 
-	buf := make([]byte, *MsgSize)
-	for n := 0; n < *NumPings; n++ {
+	buf := make([]byte, lm.MsgSize)
+	for n := 0; n < lm.NumPings; n++ {
 		nread, err := conn.Read(buf)
 		if err != nil {
 			return err
 		}
-		if nread != *MsgSize {
+		if nread != lm.MsgSize {
 			return fmt.Errorf("bad nread = %d", nread)
 		}
 		nwrite, err := conn.Write(buf)
 		if err != nil {
 			return err
 		}
-		if nwrite != *MsgSize {
+		if nwrite != lm.MsgSize {
 			return fmt.Errorf("bad nwrite = %d", nwrite)
 		}
 	}
 
-	time.Sleep(50 * time.Millisecond)
 	return nil
 }
 
-func ClientConn(conn net.Conn) error {
-	buf := make([]byte, *MsgSize)
+func (lm *latencyMeter) ClientConn(conn net.Conn) (*Result, error) {
+	buf := make([]byte, lm.MsgSize)
 	t1 := time.Now()
-	for n := 0; n < *NumPings; n++ {
+	for n := 0; n < lm.NumPings; n++ {
 		nwrite, err := conn.Write(buf)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		if nwrite != *MsgSize {
-			return fmt.Errorf("bad nwrite = %d", nwrite)
+		if nwrite != lm.MsgSize {
+			return nil, fmt.Errorf("bad nwrite = %d", nwrite)
 		}
 		nread, err := conn.Read(buf)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		if nread != *MsgSize {
-			return fmt.Errorf("bad nread = %d", nread)
+		if nread != lm.MsgSize {
+			return nil, fmt.Errorf("bad nread = %d", nread)
 		}
 	}
 	elapsed := time.Since(t1)
 
-	totalpings := int64(*NumPings * 2)
-	fmt.Println("Client done")
-	fmt.Printf("%d pingpongs took %d ns; avg. latency %d ns\n",
-		totalpings, elapsed.Nanoseconds(),
-		elapsed.Nanoseconds()/totalpings)
+	totalpings := lm.NumPings * 2
+	log.Println("Client done")
 
-	time.Sleep(50 * time.Millisecond)
-	return nil
+	return &Result{
+		ElapsedTime: elapsed,
+		NumPings:    int(totalpings),
+		AvgLatency:  time.Duration(int(elapsed.Nanoseconds()) / totalpings),
+	}, nil
 }
 
-func Client() error {
+func (lm *latencyMeter) Client() (*Result, error) {
 	log.Println("latency client running")
-	// This is the client code in the main goroutine.
-	dial, domain, address := DomainAndAddress()
+	dial, domain, address := lm.DomainAndAddress()
 	conn, err := dial(domain, address)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer conn.Close()
-	return ClientConn(conn)
+	return lm.ClientConn(conn)
 }

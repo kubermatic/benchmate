@@ -1,26 +1,56 @@
 package throughput
 
 import (
-	"flag"
 	"fmt"
-	"github.com/kubermatic/benchmate"
 	"log"
 	"net"
 	"os"
 	"time"
 )
 
-var TcpAddress = flag.String("tp_tcp_addr", ":13500", "tcp addr of throughput server")
-var UnixAddress = flag.String("tp_uds_addr", "/tmp/tp_benchmark.sock", "konnectivity-benchmate addr of throughput server")
+type Options struct {
+	MsgSize     int    `json:"msgSize"`
+	NumMsg      int    `json:"numMsg"`
+	TcpAddress  string `json:"tcpAddress"`
+	UnixAddress string `json:"unixAddress"`
+	UnixDomain  bool   `json:"unixDomain"`
+}
 
-var MsgSize = flag.Int("tp_msgsize", 256*1024, "Size of each message")
-var NumMsg = flag.Int("tp_nummsg", 10000, "Number of messages to send")
+func DefaultOptions() Options {
+	return Options{
+		MsgSize:     256 * 1024,
+		NumMsg:      100000,
+		TcpAddress:  ":13500",
+		UnixAddress: "/tmp/tp_benchmark.sock",
+		UnixDomain:  false,
+	}
+}
 
-// DomainAndAddress returns the domain,address pair for net functions to connect
+type Result struct {
+	MsgSize             int           `json:"msgSize"`
+	NumMsg              int           `json:"numMsg"`
+	TotalData           int           `json:"totalData"`
+	Elapsed             time.Duration `json:"elapsed"`
+	ThroughputMBPerSec  float64       `json:"throughputMbPerSec"`
+	ThroughputMsgPerSec float64       `json:"throughputMsgPerSec"`
+}
+
+type throughputMeter struct {
+	Options
+}
+
+// NewThroughputMeter returns a new throughputMeter.
+func NewThroughputMeter(options Options) *throughputMeter {
+	return &throughputMeter{
+		Options: options,
+	}
+}
+
+// domainAddress returns the domain,address pair for net functions to connect
 // to, depending on the value of the benchmate.UnixDomain flag.
-func DomainAndAddress() (func(string, string) (net.Conn, error), string, string) {
-	if *benchmate.UnixDomain {
-		return net.Dial, "unix", *UnixAddress
+func (tm *throughputMeter) domainAddress() (func(string, string) (net.Conn, error), string, string) {
+	if tm.UnixDomain {
+		return net.Dial, "unix", tm.UnixAddress
 	} else {
 		dialer := &net.Dialer{
 			LocalAddr: &net.TCPAddr{
@@ -28,18 +58,18 @@ func DomainAndAddress() (func(string, string) (net.Conn, error), string, string)
 			},
 		}
 
-		return dialer.Dial, "tcp", *TcpAddress
+		return dialer.Dial, "tcp", tm.TcpAddress
 	}
 }
 
-func Server() error {
-	if *benchmate.UnixDomain {
-		if err := os.RemoveAll(*UnixAddress); err != nil {
+func (tm *throughputMeter) Server() error {
+	if tm.UnixDomain {
+		if err := os.RemoveAll(tm.UnixAddress); err != nil {
 			panic(err)
 		}
 	}
 
-	_, domain, address := DomainAndAddress()
+	_, domain, address := tm.domainAddress()
 	l, err := net.Listen(domain, address)
 	if err != nil {
 		return err
@@ -54,7 +84,7 @@ func Server() error {
 
 	log.Println("connected ", conn.LocalAddr(), conn.RemoteAddr())
 
-	buf := make([]byte, *MsgSize)
+	buf := make([]byte, tm.MsgSize)
 	for {
 		nread, err := conn.Read(buf)
 		if err != nil {
@@ -65,43 +95,46 @@ func Server() error {
 		}
 	}
 
-	time.Sleep(50 * time.Millisecond)
 	return nil
 }
 
-func ClientConn(conn net.Conn) error {
-	buf := make([]byte, *MsgSize)
+func (tm *throughputMeter) ClientConn(conn net.Conn) (*Result, error) {
+	buf := make([]byte, tm.MsgSize)
 	t1 := time.Now()
-	for n := 0; n < *NumMsg; n++ {
+	for n := 0; n < tm.NumMsg; n++ {
 		nwrite, err := conn.Write(buf)
 		if err != nil {
-			return err
+			return nil, err
 		}
-		if nwrite != *MsgSize {
-			return fmt.Errorf("bad nwrite = %d")
+		if nwrite != tm.MsgSize {
+			return nil, fmt.Errorf("bad nwrite = %d")
 		}
 	}
 	elapsed := time.Since(t1)
 
-	totaldata := int64(*NumMsg * *MsgSize)
+	totaldata := int64(tm.NumMsg * tm.MsgSize)
 	fmt.Println("Client done")
 	fmt.Printf("Sent %d msg in %d ns; throughput %d msg/sec (%d MB/sec)\n",
-		*NumMsg, elapsed,
-		(int64(*NumMsg)*1000000000)/elapsed.Nanoseconds(),
+		tm.NumMsg, elapsed,
+		(int64(tm.NumMsg)*1000000000)/elapsed.Nanoseconds(),
 		(totaldata*1000)/elapsed.Nanoseconds())
 
-	time.Sleep(50 * time.Millisecond)
-	return nil
+	return &Result{
+		MsgSize:             tm.MsgSize,
+		NumMsg:              tm.NumMsg,
+		TotalData:           int(totaldata),
+		Elapsed:             elapsed,
+		ThroughputMBPerSec:  float64((totaldata * 1000) / elapsed.Nanoseconds()),
+		ThroughputMsgPerSec: float64((int64(tm.NumMsg) * 1000000000) / elapsed.Nanoseconds()),
+	}, nil
 }
 
-func Client() error {
-
-	// This is the Client code in the main goroutine.
-	dial, domain, address := DomainAndAddress()
+func (tm *throughputMeter) Client() (*Result, error) {
+	dial, domain, address := tm.domainAddress()
 	conn, err := dial(domain, address)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer conn.Close()
-	return ClientConn(conn)
+	return tm.ClientConn(conn)
 }

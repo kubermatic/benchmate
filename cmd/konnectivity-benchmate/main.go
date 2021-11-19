@@ -42,10 +42,12 @@ func main() {
 		panic(err)
 	}
 
-	err = throughput.ClientConn(proxyConn)
+	tpResult, err := throughput.NewThroughputMeter(throughput.DefaultOptions()).ClientConn(proxyConn)
 	if err != nil {
 		log.Println(err)
 	}
+
+	fmt.Println(tpResult)
 
 	requestAddress = fmt.Sprintf("%s:%d", nodeIP, 13501)
 	proxyConn, err = tunnel.DialContext(ctx, "tcp", requestAddress)
@@ -53,9 +55,11 @@ func main() {
 		panic(err)
 	}
 
-	err = latency.ClientConn(proxyConn)
+	latResult, err := latency.NewLatencyMeter(latency.DefaultOptions()).ClientConn(proxyConn)
 	if err != nil {
 		log.Println(err)
 	}
+
+	fmt.Println(latResult)
 
 }
