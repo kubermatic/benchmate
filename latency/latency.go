@@ -13,6 +13,7 @@ type Options struct {
 	TcpAddress  string `json:"tcpAddress"`
 	UnixAddress string `json:"unixAddress"`
 	UnixDomain  bool   `json:"unixDomain"`
+	ClientPort  int    `json:"clientPort"`
 }
 
 func DefaultOptions() Options {
@@ -22,6 +23,7 @@ func DefaultOptions() Options {
 		TcpAddress:  ":13501",
 		UnixAddress: "/tmp/lat_benchmark.sock",
 		UnixDomain:  false,
+		ClientPort:  13504,
 	}
 }
 
@@ -49,7 +51,7 @@ func (lm *latencyMeter) DomainAndAddress() (func(string, string) (net.Conn, erro
 	} else {
 		dialer := &net.Dialer{
 			LocalAddr: &net.TCPAddr{
-				Port: 13504,
+				Port: lm.ClientPort,
 			},
 		}
 

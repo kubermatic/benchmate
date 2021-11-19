@@ -14,6 +14,7 @@ type Options struct {
 	TcpAddress  string `json:"tcpAddress"`
 	UnixAddress string `json:"unixAddress"`
 	UnixDomain  bool   `json:"unixDomain"`
+	ClientPort  int    `json:"clientPort"`
 }
 
 func DefaultOptions() Options {
@@ -23,6 +24,7 @@ func DefaultOptions() Options {
 		TcpAddress:  ":13500",
 		UnixAddress: "/tmp/tp_benchmark.sock",
 		UnixDomain:  false,
+		ClientPort:  13503,
 	}
 }
 
@@ -54,7 +56,7 @@ func (tm *throughputMeter) domainAddress() (func(string, string) (net.Conn, erro
 	} else {
 		dialer := &net.Dialer{
 			LocalAddr: &net.TCPAddr{
-				Port: 13503,
+				Port: tm.ClientPort,
 			},
 		}
 
