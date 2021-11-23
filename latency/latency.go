@@ -19,7 +19,7 @@ type Options struct {
 func DefaultOptions() Options {
 	return Options{
 		MsgSize:     128,
-		NumPings:    50000,
+		NumPings:    1000,
 		TcpAddress:  ":13501",
 		UnixAddress: "/tmp/lat_benchmark.sock",
 		UnixDomain:  false,
