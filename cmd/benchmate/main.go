@@ -1,10 +1,12 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"github.com/kubermatic/benchmate/latency"
 	"github.com/kubermatic/benchmate/throughput"
+	"io/ioutil"
 	"log"
 	"sync"
 )
@@ -54,16 +56,40 @@ func main() {
 	log.Println("Running...")
 
 	var c bool
-	var nodeIP string
+	var latencyOpts string
+	var throughputOpts string
 	flag.BoolVar(&c, "c", false, "set the flag to run in client mode. Default is server mode. ")
-	flag.StringVar(&nodeIP, "node-ip", "", "IP address of benchmate server")
+	flag.StringVar(&latencyOpts, "latOpt", "", "set the latency options")
+	flag.StringVar(&throughputOpts, "tpOpt", "", "set the throughput options")
 	flag.Parse()
-	log.Println("node-ip", nodeIP)
+
 	tpOpt := throughput.DefaultOptions()
+
+	if throughputOpts != "" {
+		data, err := ioutil.ReadFile(throughputOpts)
+		if err != nil {
+			panic(err)
+		}
+		err = json.Unmarshal(data, &tpOpt)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	latOpt := latency.DefaultOptions()
+
+	if latencyOpts != "" {
+		data, err := ioutil.ReadFile(latencyOpts)
+		if err != nil {
+			panic(err)
+		}
+		err = json.Unmarshal(data, &latOpt)
+		if err != nil {
+			panic(err)
+		}
+	}
+
 	if c {
-		tpOpt.TcpAddress = nodeIP + ":13500"
-		latOpt.TcpAddress = nodeIP + ":13501"
 		RunClients(tpOpt, latOpt)
 	} else {
 		RunServers(tpOpt, latOpt)

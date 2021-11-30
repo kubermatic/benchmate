@@ -1,0 +1,8 @@
+{
+  "msgSize": 256000,
+  "numMsg": 100,
+  "tcpAddress": ":13500",
+  "unixAddress": "/tmp/benchmate.sock",
+  "unixDomain": false,
+  "clientPort": 13503
+}
