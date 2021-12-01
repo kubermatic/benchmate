@@ -1,8 +1,0 @@
-{
-  "msgSize": 128,
-  "numPings": 100,
-  "tcpAddress": "18.194.244.158:13501",
-  "unixAddress": "/tmp/lat_benchmark.sock",
-  "unixDomain": false,
-  "clientPort": 13504
-}
