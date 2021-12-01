@@ -15,6 +15,7 @@ type Options struct {
 	UnixAddress string `json:"unixAddress"`
 	UnixDomain  bool   `json:"unixDomain"`
 	ClientPort  int    `json:"clientPort"`
+	Timeout     int    `json:"timeout"` // in milliseconds
 }
 
 func DefaultOptions() Options {
@@ -25,6 +26,7 @@ func DefaultOptions() Options {
 		UnixAddress: "/tmp/tp_benchmark.sock",
 		UnixDomain:  false,
 		ClientPort:  13503,
+		Timeout:     120000,
 	}
 }
 
@@ -103,6 +105,8 @@ func (tm *throughputMeter) Server() error {
 func (tm *throughputMeter) ClientConn(conn net.Conn) (*Result, error) {
 	buf := make([]byte, tm.MsgSize)
 	t1 := time.Now()
+	stopTime := t1.Add(time.Duration(tm.Timeout) * time.Millisecond)
+	msgSent := 0
 	for n := 0; n < tm.NumMsg; n++ {
 		nwrite, err := conn.Write(buf)
 		if err != nil {
@@ -111,23 +115,28 @@ func (tm *throughputMeter) ClientConn(conn net.Conn) (*Result, error) {
 		if nwrite != tm.MsgSize {
 			return nil, fmt.Errorf("bad nwrite = %d")
 		}
+
+		msgSent = n
+		if time.Now().After(stopTime) {
+			break
+		}
 	}
 	elapsed := time.Since(t1)
 
-	totaldata := int64(tm.NumMsg * tm.MsgSize)
+	totaldata := int64(msgSent * tm.MsgSize)
 	fmt.Println("Client done")
 	fmt.Printf("Sent %d msg in %d ns; throughput %d msg/sec (%d MB/sec)\n",
-		tm.NumMsg, elapsed,
-		(int64(tm.NumMsg)*1000000000)/elapsed.Nanoseconds(),
+		msgSent, elapsed,
+		(int64(msgSent)*1000000000)/elapsed.Nanoseconds(),
 		(totaldata*1000)/elapsed.Nanoseconds())
 
 	return &Result{
 		MsgSize:             tm.MsgSize,
-		NumMsg:              tm.NumMsg,
+		NumMsg:              msgSent,
 		TotalData:           int(totaldata),
 		Elapsed:             elapsed,
 		ThroughputMBPerSec:  float64((totaldata * 1000) / elapsed.Nanoseconds()),
-		ThroughputMsgPerSec: float64((int64(tm.NumMsg) * 1000000000) / elapsed.Nanoseconds()),
+		ThroughputMsgPerSec: float64((int64(msgSent) * 1000000000) / elapsed.Nanoseconds()),
 	}, nil
 }
 

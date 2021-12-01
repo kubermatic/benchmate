@@ -14,6 +14,7 @@ type Options struct {
 	UnixAddress string `json:"unixAddress"`
 	UnixDomain  bool   `json:"unixDomain"`
 	ClientPort  int    `json:"clientPort"`
+	Timeout     int    `json:"timeout"` // in milliseconds
 }
 
 func DefaultOptions() Options {
@@ -24,6 +25,7 @@ func DefaultOptions() Options {
 		UnixAddress: "/tmp/lat_benchmark.sock",
 		UnixDomain:  false,
 		ClientPort:  13504,
+		Timeout:     120000,
 	}
 }
 
@@ -99,6 +101,8 @@ func (lm *latencyMeter) Server() error {
 func (lm *latencyMeter) ClientConn(conn net.Conn) (*Result, error) {
 	buf := make([]byte, lm.MsgSize)
 	t1 := time.Now()
+	stopTime := t1.Add(time.Duration(lm.Timeout) * time.Millisecond)
+	pingsSent := 0
 	for n := 0; n < lm.NumPings; n++ {
 		nwrite, err := conn.Write(buf)
 		if err != nil {
@@ -114,10 +118,15 @@ func (lm *latencyMeter) ClientConn(conn net.Conn) (*Result, error) {
 		if nread != lm.MsgSize {
 			return nil, fmt.Errorf("bad nread = %d", nread)
 		}
+
+		pingsSent = n
+		if time.Now().After(stopTime) {
+			break
+		}
 	}
 	elapsed := time.Since(t1)
-
-	totalpings := lm.NumPings * 2
+	log.Println("numpings", pingsSent, "elapsed", elapsed)
+	totalpings := pingsSent * 2
 	log.Println("Client done")
 
 	return &Result{

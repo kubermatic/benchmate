@@ -58,13 +58,26 @@ func main() {
 	var c bool
 	var latencyOpts string
 	var throughputOpts string
+	var nodeIP string
 	flag.BoolVar(&c, "c", false, "set the flag to run in client mode. Default is server mode. ")
 	flag.StringVar(&latencyOpts, "latOpt", "", "set the latency options")
 	flag.StringVar(&throughputOpts, "tpOpt", "", "set the throughput options")
+	flag.StringVar(&nodeIP, "node-ip", "", "override the tcpaddr setting")
 	flag.Parse()
 
-	tpOpt := throughput.DefaultOptions()
+	latOpt := latency.DefaultOptions()
+	if latencyOpts != "" {
+		data, err := ioutil.ReadFile(latencyOpts)
+		if err != nil {
+			panic(err)
+		}
+		err = json.Unmarshal(data, &latOpt)
+		if err != nil {
+			panic(err)
+		}
+	}
 
+	tpOpt := throughput.DefaultOptions()
 	if throughputOpts != "" {
 		data, err := ioutil.ReadFile(throughputOpts)
 		if err != nil {
@@ -76,17 +89,9 @@ func main() {
 		}
 	}
 
-	latOpt := latency.DefaultOptions()
-
-	if latencyOpts != "" {
-		data, err := ioutil.ReadFile(latencyOpts)
-		if err != nil {
-			panic(err)
-		}
-		err = json.Unmarshal(data, &latOpt)
-		if err != nil {
-			panic(err)
-		}
+	if nodeIP != "" {
+		tpOpt.TcpAddress = nodeIP + ":13500"
+		latOpt.TcpAddress = nodeIP + ":13501"
 	}
 
 	if c {

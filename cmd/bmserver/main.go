@@ -12,6 +12,7 @@ func main() {
 	flag.StringVar(&addr, "addr", ":8080", "Address to listen on")
 	flag.Parse()
 
-	http.HandleFunc("/bm", bmServer.StatsHandler)
+	http.HandleFunc("/benchmate", bmServer.BenchmateHandler)
+	http.HandleFunc("/exit", bmServer.BenchmateHandler)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }

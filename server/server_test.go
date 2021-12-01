@@ -15,7 +15,7 @@ import (
 )
 
 func TestName(t *testing.T) {
-	s := httptest.NewServer(http.HandlerFunc(StatsHandler))
+	s := httptest.NewServer(http.HandlerFunc(BenchmateHandler))
 	defer s.Close()
 	rand.Seed(time.Now().UnixNano())
 
@@ -39,7 +39,7 @@ func TestName(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	c := httptest.NewServer(http.HandlerFunc(StatsHandler))
+	c := httptest.NewServer(http.HandlerFunc(BenchmateHandler))
 	defer c.Close()
 	resp, err = doReq(c.URL, &Request{
 		ThroughputOptions: &tpOpt,

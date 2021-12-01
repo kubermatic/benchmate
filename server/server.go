@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"os"
 )
 
 type Request struct {
@@ -15,7 +16,14 @@ type Request struct {
 	Client            bool                `json:"client"`
 }
 
-func StatsHandler(w http.ResponseWriter, r *http.Request) {
+func ExitHandler(w http.ResponseWriter, r *http.Request) {
+	log.Println("Exiting...")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Exiting..."))
+	os.Exit(0)
+}
+
+func BenchmateHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
 		panic(err)
