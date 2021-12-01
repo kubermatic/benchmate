@@ -13,6 +13,6 @@ func main() {
 	flag.Parse()
 
 	http.HandleFunc("/benchmate", bmServer.BenchmateHandler)
-	http.HandleFunc("/exit", bmServer.BenchmateHandler)
+	http.HandleFunc("/exit", bmServer.ExitHandler)
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
