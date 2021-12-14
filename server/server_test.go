@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
 package server
 
 import (
@@ -70,6 +69,10 @@ func TestName(t *testing.T) {
 		LatencyOptions:    &latOpt,
 		Client:            true,
 	})
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	body, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatal(err)

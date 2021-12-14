@@ -36,7 +36,7 @@ type Request struct {
 func ExitHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Exiting...")
 	w.WriteHeader(http.StatusOK)
-	w.Write([]byte("Exiting..."))
+	_, _ = w.Write([]byte("Exiting..."))
 	os.Exit(0)
 }
 
