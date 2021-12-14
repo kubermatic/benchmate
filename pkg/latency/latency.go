@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+
 	"time"
 )
 
@@ -34,8 +35,18 @@ type Options struct {
 	Timeout     int    `json:"timeout"` // in milliseconds
 }
 
-// DefaultOptions default latency benchmark options.
+// DefaultOptions returns default latency benchmark options.
+//	Options{
+//		MsgSize:     128,                       // in bytes
+//		NumPings:    1000,                      // number of pings to send
+//		TcpAddress:  ":13501",                  // tcp address to send to
+//		UnixAddress: "/tmp/lat_benchmark.sock", // unix address to send to
+//		UnixDomain:  false,                     // whether to use unix domain socket
+//		ClientPort:  13504,                     // port that client contacts from
+//		Timeout:     120000,                    // in milliseconds
+//	}
 func DefaultOptions() Options {
+	s
 	return Options{
 		MsgSize:     128,
 		NumPings:    1000,
@@ -51,23 +62,23 @@ func DefaultOptions() Options {
 type Result struct {
 	ElapsedTime time.Duration `json:"elapsedTime"`
 	NumPings    int           `json:"numPings"`
-	AvgLatency  time.Duration `json:"AvgLatency"`
+	AvgLatency  time.Duration `json:"avgLatency"`
 }
 
-type latencyMeter struct {
+type LatencyMeter struct {
 	Options
 }
 
 // NewLatencyMeter creates a new latency meter.
-func NewLatencyMeter(options Options) *latencyMeter {
-	return &latencyMeter{
+func NewLatencyMeter(options Options) *LatencyMeter {
+	return &LatencyMeter{
 		Options: options,
 	}
 }
 
 // domainAndAddress returns the domain,address pair for net functions to connect
 // to, depending on the value of the benchmate.UnixDomain flag.
-func (lm *latencyMeter) domainAndAddress() (func(string, string) (net.Conn, error), string, string) {
+func (lm *LatencyMeter) domainAndAddress() (func(string, string) (net.Conn, error), string, string) {
 	if lm.UnixDomain {
 		return net.Dial, "unix", lm.UnixAddress
 	} else {
@@ -81,7 +92,9 @@ func (lm *latencyMeter) domainAndAddress() (func(string, string) (net.Conn, erro
 	}
 }
 
-func (lm *latencyMeter) Server() error {
+// Server starts a latency benchmark server. It returns once it participates
+// in one benchmark with the client.
+func (lm *LatencyMeter) Server() error {
 	_, domain, address := lm.domainAndAddress()
 	l, err := net.Listen(domain, address)
 	if err != nil {
@@ -118,7 +131,10 @@ func (lm *latencyMeter) Server() error {
 	return nil
 }
 
-func (lm *latencyMeter) ClientConn(conn net.Conn) (*Result, error) {
+// ClientConn starts a latency benchmark client. It is like LatencyMeter.Client
+// but it takes a net.Conn as an argument. This is useful when you want to custom
+// net.Conn as in the case of konnectivity-benchmate.
+func (lm *LatencyMeter) ClientConn(conn net.Conn) (*Result, error) {
 	buf := make([]byte, lm.MsgSize)
 	t1 := time.Now()
 	stopTime := t1.Add(time.Duration(lm.Timeout) * time.Millisecond)
@@ -156,7 +172,9 @@ func (lm *latencyMeter) ClientConn(conn net.Conn) (*Result, error) {
 	}, nil
 }
 
-func (lm *latencyMeter) Client() (*Result, error) {
+// Client starts a latency benchmark client and returns the results after
+// the benchmark is complete.
+func (lm *LatencyMeter) Client() (*Result, error) {
 	log.Println("latency client running")
 	dial, domain, address := lm.domainAndAddress()
 	conn, err := dial(domain, address)

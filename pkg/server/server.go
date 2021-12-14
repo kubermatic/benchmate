@@ -18,13 +18,12 @@ package server
 
 import (
 	"encoding/json"
+	"github.com/kubermatic/benchmate/pkg/latency"
+	"github.com/kubermatic/benchmate/pkg/throughput"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
-
-	"github.com/kubermatic/benchmate/latency"
-	"github.com/kubermatic/benchmate/throughput"
 )
 
 type Request struct {

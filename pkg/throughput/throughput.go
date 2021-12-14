@@ -14,7 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
 package throughput
 
 import (
@@ -25,6 +24,7 @@ import (
 	"time"
 )
 
+// Options holds the options for the throughput benchmark.
 type Options struct {
 	MsgSize     int    `json:"msgSize"`
 	NumMsg      int    `json:"numMsg"`
@@ -35,6 +35,7 @@ type Options struct {
 	Timeout     int    `json:"timeout"` // in milliseconds
 }
 
+// DefaultOptions returns default throughput benchmark options.
 func DefaultOptions() Options {
 	return Options{
 		MsgSize:     256 * 1024,
@@ -47,6 +48,7 @@ func DefaultOptions() Options {
 	}
 }
 
+// Result holds the results of a throughput benchmark.
 type Result struct {
 	MsgSize             int           `json:"msgSize"`
 	NumMsg              int           `json:"numMsg"`

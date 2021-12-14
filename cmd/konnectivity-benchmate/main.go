@@ -14,15 +14,14 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-
 package main
 
 import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/kubermatic/benchmate/latency"
-	"github.com/kubermatic/benchmate/throughput"
+	"github.com/kubermatic/benchmate/pkg/latency"
+	"github.com/kubermatic/benchmate/pkg/throughput"
 	"google.golang.org/grpc"
 	"log"
 	"net"

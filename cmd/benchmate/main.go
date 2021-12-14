@@ -14,14 +14,36 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// This is a program that can be used to benchmark the performance of the
+// network. You can measure latency and throughput of the network.
+//
+// You run server somewhere lime
+//	 $ benchmate
+//
+// You run client somewhere like
+//
+// 	$ benchmate -c
+//
+// As long as client can talk to the server, you can measure the latency and throughput.
+//
+// You can configure the details using json files and supply them as arguments.
+//  $ benchmate -c --latOpt=latOpt.json --tpOpt=tpOpt.json
+// This will read the the benchmark parameters such as message size from the json
+// files and use them.
+//
+// Sample json files can be found i the hack/examples folder.
+//
+// benchmate is built using the library in https://pkg.go.dev/github.com/kubermatic/benchmate/pkg/latency/ and pkg/throughput.
+//
+// You can use the library to add network benchmarking to your application.
 package main
 
 import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/kubermatic/benchmate/latency"
-	"github.com/kubermatic/benchmate/throughput"
+	"github.com/kubermatic/benchmate/pkg/latency"
+	"github.com/kubermatic/benchmate/pkg/throughput"
 	"io/ioutil"
 	"log"
 	"sync"

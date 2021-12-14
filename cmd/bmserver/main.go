@@ -18,7 +18,7 @@ package main
 
 import (
 	"flag"
-	bmServer "github.com/kubermatic/benchmate/server"
+	bmServer "github.com/kubermatic/benchmate/pkg/server"
 	"log"
 	"net/http"
 )
