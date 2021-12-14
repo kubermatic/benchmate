@@ -1,3 +1,19 @@
+/*
+Copyright 2021 The Kubermatic Kubernetes Platform contributors.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/
+
 package latency
 
 import (
@@ -7,6 +23,7 @@ import (
 	"time"
 )
 
+// Options holds the options for the latency benchmark.
 type Options struct {
 	MsgSize     int    `json:"msgSize"`
 	NumPings    int    `json:"numPings"`
@@ -17,6 +34,7 @@ type Options struct {
 	Timeout     int    `json:"timeout"` // in milliseconds
 }
 
+// DefaultOptions default latency benchmark options.
 func DefaultOptions() Options {
 	return Options{
 		MsgSize:     128,
@@ -29,6 +47,7 @@ func DefaultOptions() Options {
 	}
 }
 
+// Result holds the results of a latency benchmark.
 type Result struct {
 	ElapsedTime time.Duration `json:"elapsedTime"`
 	NumPings    int           `json:"numPings"`
@@ -39,6 +58,7 @@ type latencyMeter struct {
 	Options
 }
 
+// NewLatencyMeter creates a new latency meter.
 func NewLatencyMeter(options Options) *latencyMeter {
 	return &latencyMeter{
 		Options: options,
