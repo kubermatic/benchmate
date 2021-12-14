@@ -44,14 +44,14 @@ Feedback and discussion are available on [the mailing list][11].
 
 See [the list of releases][3] to find out about feature changes.
 
-[1]: https://github.com/kubermatic/XXX/issues
-[2]: https://github.com/kubermatic/XXX/blob/master/CONTRIBUTING.md
-[3]: https://github.com/kubermatic/XXX/releases
-[4]: https://github.com/kubermatic/XXX/blob/master/CODE_OF_CONDUCT.md
+[1]: https://github.com/kubermatic/benchmate/issues
+[2]: https://github.com/kubermatic/benchmate/blob/master/CONTRIBUTING.md
+[3]: https://github.com/kubermatic/benchmate/releases
+[4]: https://github.com/kubermatic/benchmate/blob/master/CODE_OF_CONDUCT.md
 
 [11]: https://groups.google.com/forum/#!forum/kubermatic-dev
-[12]: https://kubermatic.slack.com/messages/XXX
-[13]: https://github.com/kubermatic/XXX/blob/master/Zenhub.md
+[12]: https://kubermatic.slack.com/messages/benchmate
+[13]: https://github.com/kubermatic/benchmate/blob/master/Zenhub.md
 [15]: http://slack.kubermatic.io/
 
-[21]: https://kubermatic.github.io/XXX/
+[21]: https://kubermatic.github.io/benchmate/
