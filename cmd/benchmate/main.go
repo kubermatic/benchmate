@@ -41,7 +41,6 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"fmt"
 	"github.com/kubermatic/benchmate/pkg/latency"
 	"github.com/kubermatic/benchmate/pkg/throughput"
 	"io/ioutil"
@@ -54,13 +53,26 @@ func RunClients(tpOpt throughput.Options, latOpt latency.Options) {
 	if err != nil {
 		log.Println(err)
 	}
-	fmt.Println(tpResult)
+
+	result, err := json.MarshalIndent(tpResult, "", "  ")
+	if err != nil {
+		log.Println(err)
+	}
+
+	log.Println(string(result))
+	log.Println("throughput: ", tpResult.ThroughputMBPerSec, "MB/s")
 
 	latResult, err := latency.NewLatencyMeter(latOpt).Client()
 	if err != nil {
 		log.Println(err)
 	}
-	fmt.Println(latResult)
+
+	result, err = json.MarshalIndent(latResult, "", "  ")
+	if err != nil {
+		log.Println(err)
+	}
+	log.Println(string(result))
+	log.Println("average latency:", latResult.AvgLatency)
 }
 
 func RunServers(tpOpt throughput.Options, latOpt latency.Options) {

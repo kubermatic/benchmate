@@ -54,24 +54,32 @@ type Result struct {
 	NumMsg              int           `json:"numMsg"`
 	TotalData           int           `json:"totalData"`
 	Elapsed             time.Duration `json:"elapsed"`
-	ThroughputMBPerSec  float64       `json:"throughputMbPerSec"`
+	ThroughputMBPerSec  float64       `json:"throughputMBPerSec"`
 	ThroughputMsgPerSec float64       `json:"throughputMsgPerSec"`
 }
 
-type throughputMeter struct {
+type ThroughputMeter struct {
 	Options
+	logger *log.Logger
 }
 
-// NewThroughputMeter returns a new throughputMeter.
-func NewThroughputMeter(options Options) *throughputMeter {
-	return &throughputMeter{
+// NewThroughputMeter returns a new ThroughputMeter.
+func NewThroughputMeter(options Options) *ThroughputMeter {
+	return &ThroughputMeter{
 		Options: options,
+	}
+}
+
+// WithLogger sets the logger for the throughput meter.
+func WithLogger(logger *log.Logger) func(*ThroughputMeter) {
+	return func(l *ThroughputMeter) {
+		l.logger = logger
 	}
 }
 
 // domainAddress returns the domain,address pair for net functions to connect
 // to, depending on the value of the benchmate.UnixDomain flag.
-func (tm *throughputMeter) domainAddress() (func(string, string) (net.Conn, error), string, string) {
+func (tm *ThroughputMeter) domainAddress() (func(string, string) (net.Conn, error), string, string) {
 	if tm.UnixDomain {
 		return net.Dial, "unix", tm.UnixAddress
 	} else {
@@ -85,7 +93,7 @@ func (tm *throughputMeter) domainAddress() (func(string, string) (net.Conn, erro
 	}
 }
 
-func (tm *throughputMeter) Server() error {
+func (tm *ThroughputMeter) Server() error {
 	if tm.UnixDomain {
 		if err := os.RemoveAll(tm.UnixAddress); err != nil {
 			panic(err)
@@ -105,7 +113,7 @@ func (tm *throughputMeter) Server() error {
 	}
 	defer conn.Close()
 
-	log.Println("connected ", conn.LocalAddr(), conn.RemoteAddr())
+	tm.logger.Println("connected ", conn.LocalAddr(), conn.RemoteAddr())
 
 	buf := make([]byte, tm.MsgSize)
 	for {
@@ -121,7 +129,7 @@ func (tm *throughputMeter) Server() error {
 	return nil
 }
 
-func (tm *throughputMeter) ClientConn(conn net.Conn) (*Result, error) {
+func (tm *ThroughputMeter) ClientConn(conn net.Conn) (*Result, error) {
 	buf := make([]byte, tm.MsgSize)
 	t1 := time.Now()
 	stopTime := t1.Add(time.Duration(tm.Timeout) * time.Millisecond)
@@ -143,8 +151,8 @@ func (tm *throughputMeter) ClientConn(conn net.Conn) (*Result, error) {
 	elapsed := time.Since(t1)
 
 	totaldata := int64(msgSent * tm.MsgSize)
-	fmt.Println("Client done")
-	fmt.Printf("Sent %d msg in %d ns; throughput %d msg/sec (%d MB/sec)\n",
+	tm.logger.Println("Client done")
+	tm.logger.Printf("Sent %d msg in %d ns; throughput %d msg/sec (%d MB/sec)\n",
 		msgSent, elapsed,
 		(int64(msgSent)*1000000000)/elapsed.Nanoseconds(),
 		(totaldata*1000)/elapsed.Nanoseconds())
@@ -159,7 +167,7 @@ func (tm *throughputMeter) ClientConn(conn net.Conn) (*Result, error) {
 	}, nil
 }
 
-func (tm *throughputMeter) Client() (*Result, error) {
+func (tm *ThroughputMeter) Client() (*Result, error) {
 	dial, domain, address := tm.domainAddress()
 	conn, err := dial(domain, address)
 	if err != nil {
