@@ -57,7 +57,7 @@ func prettyJSON(x interface{}) string {
 	return string(b)
 }
 
-func RunClients(tpOpt throughput.Options, latOpt latency.Options) {
+func runClients(tpOpt throughput.Options, latOpt latency.Options) {
 	log.Println("running throughput client with:", prettyJSON(tpOpt))
 	tpResult, err := throughput.NewThroughputMeter(tpOpt).Client()
 	if err != nil {
@@ -65,6 +65,7 @@ func RunClients(tpOpt throughput.Options, latOpt latency.Options) {
 	} else {
 		log.Println("throughput benchmark result:", prettyJSON(tpResult))
 		log.Println("throughput: ", tpResult.ThroughputMBPerSec, "MB/s")
+		log.Println("throughput client done.")
 	}
 
 	log.Println("running latency client with:", prettyJSON(latOpt))
@@ -74,10 +75,11 @@ func RunClients(tpOpt throughput.Options, latOpt latency.Options) {
 	} else {
 		log.Println("latency benchmark result:", prettyJSON(latResult))
 		log.Println("average latency:", latResult.AvgLatency)
+		log.Println("latency client done.")
 	}
 }
 
-func RunServers(tpOpt throughput.Options, latOpt latency.Options) {
+func runServers(tpOpt throughput.Options, latOpt latency.Options) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
@@ -149,9 +151,10 @@ func main() {
 	}
 
 	if c {
-		RunClients(tpOpt, latOpt)
+		runClients(tpOpt, latOpt)
 	} else {
-		RunServers(tpOpt, latOpt)
+		runServers(tpOpt, latOpt)
 	}
-	log.Println("Finished.")
+
+	log.Println("done.")
 }
