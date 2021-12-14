@@ -45,9 +45,9 @@ func NewLatencyMeter(options Options) *latencyMeter {
 	}
 }
 
-// DomainAndAddress returns the domain,address pair for net functions to connect
+// domainAndAddress returns the domain,address pair for net functions to connect
 // to, depending on the value of the benchmate.UnixDomain flag.
-func (lm *latencyMeter) DomainAndAddress() (func(string, string) (net.Conn, error), string, string) {
+func (lm *latencyMeter) domainAndAddress() (func(string, string) (net.Conn, error), string, string) {
 	if lm.UnixDomain {
 		return net.Dial, "unix", lm.UnixAddress
 	} else {
@@ -62,7 +62,7 @@ func (lm *latencyMeter) DomainAndAddress() (func(string, string) (net.Conn, erro
 }
 
 func (lm *latencyMeter) Server() error {
-	_, domain, address := lm.DomainAndAddress()
+	_, domain, address := lm.domainAndAddress()
 	l, err := net.Listen(domain, address)
 	if err != nil {
 		return err
@@ -138,7 +138,7 @@ func (lm *latencyMeter) ClientConn(conn net.Conn) (*Result, error) {
 
 func (lm *latencyMeter) Client() (*Result, error) {
 	log.Println("latency client running")
-	dial, domain, address := lm.DomainAndAddress()
+	dial, domain, address := lm.domainAndAddress()
 	conn, err := dial(domain, address)
 	if err != nil {
 		return nil, err
