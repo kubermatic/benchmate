@@ -18,7 +18,6 @@ package throughput
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"time"
@@ -60,20 +59,12 @@ type Result struct {
 
 type ThroughputMeter struct {
 	Options
-	logger *log.Logger
 }
 
 // NewThroughputMeter returns a new ThroughputMeter.
 func NewThroughputMeter(options Options) *ThroughputMeter {
 	return &ThroughputMeter{
 		Options: options,
-	}
-}
-
-// WithLogger sets the logger for the throughput meter.
-func WithLogger(logger *log.Logger) func(*ThroughputMeter) {
-	return func(l *ThroughputMeter) {
-		l.logger = logger
 	}
 }
 
@@ -113,8 +104,6 @@ func (tm *ThroughputMeter) Server() error {
 	}
 	defer conn.Close()
 
-	tm.logger.Println("connected ", conn.LocalAddr(), conn.RemoteAddr())
-
 	buf := make([]byte, tm.MsgSize)
 	for {
 		nread, err := conn.Read(buf)
@@ -134,6 +123,7 @@ func (tm *ThroughputMeter) ClientConn(conn net.Conn) (*Result, error) {
 	t1 := time.Now()
 	stopTime := t1.Add(time.Duration(tm.Timeout) * time.Millisecond)
 	msgSent := 0
+
 	for n := 0; n < tm.NumMsg; n++ {
 		nwrite, err := conn.Write(buf)
 		if err != nil {
@@ -148,14 +138,9 @@ func (tm *ThroughputMeter) ClientConn(conn net.Conn) (*Result, error) {
 			break
 		}
 	}
-	elapsed := time.Since(t1)
 
+	elapsed := time.Since(t1)
 	totaldata := int64(msgSent * tm.MsgSize)
-	tm.logger.Println("Client done")
-	tm.logger.Printf("Sent %d msg in %d ns; throughput %d msg/sec (%d MB/sec)\n",
-		msgSent, elapsed,
-		(int64(msgSent)*1000000000)/elapsed.Nanoseconds(),
-		(totaldata*1000)/elapsed.Nanoseconds())
 
 	return &Result{
 		MsgSize:             tm.MsgSize,

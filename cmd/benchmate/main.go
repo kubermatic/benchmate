@@ -43,36 +43,38 @@ import (
 	"flag"
 	"github.com/kubermatic/benchmate/pkg/latency"
 	"github.com/kubermatic/benchmate/pkg/throughput"
+	"io"
 	"io/ioutil"
 	"log"
 	"sync"
 )
 
+func prettyJSON(x interface{}) string {
+	b, err := json.MarshalIndent(x, "", "  ")
+	if err != nil {
+		panic(err)
+	}
+	return string(b)
+}
+
 func RunClients(tpOpt throughput.Options, latOpt latency.Options) {
+	log.Println("running throughput client with:", prettyJSON(tpOpt))
 	tpResult, err := throughput.NewThroughputMeter(tpOpt).Client()
 	if err != nil {
-		log.Println(err)
+		log.Println("throughput measurement failed:", err)
+	} else {
+		log.Println("throughput benchmark result:", prettyJSON(tpResult))
+		log.Println("throughput: ", tpResult.ThroughputMBPerSec, "MB/s")
 	}
 
-	result, err := json.MarshalIndent(tpResult, "", "  ")
-	if err != nil {
-		log.Println(err)
-	}
-
-	log.Println(string(result))
-	log.Println("throughput: ", tpResult.ThroughputMBPerSec, "MB/s")
-
+	log.Println("running latency client with:", prettyJSON(latOpt))
 	latResult, err := latency.NewLatencyMeter(latOpt).Client()
 	if err != nil {
-		log.Println(err)
+		log.Println("latency measurement failed:", err)
+	} else {
+		log.Println("latency benchmark result:", prettyJSON(latResult))
+		log.Println("average latency:", latResult.AvgLatency)
 	}
-
-	result, err = json.MarshalIndent(latResult, "", "  ")
-	if err != nil {
-		log.Println(err)
-	}
-	log.Println(string(result))
-	log.Println("average latency:", latResult.AvgLatency)
 }
 
 func RunServers(tpOpt throughput.Options, latOpt latency.Options) {
@@ -80,19 +82,25 @@ func RunServers(tpOpt throughput.Options, latOpt latency.Options) {
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		log.Println("throughput server running with: ", tpOpt)
+		log.Println("running throughput server with:", prettyJSON(tpOpt))
 		err := throughput.NewThroughputMeter(tpOpt).Server()
 		if err != nil {
-			log.Println("throughput server: ", err)
+			if err == io.EOF {
+				log.Println("throughput server done.")
+			} else {
+				log.Println("throughput server failed:", err)
+			}
 		}
 	}()
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
-		log.Println("latency server running with: ", latOpt)
+		log.Println("running latency server with:", prettyJSON(latOpt))
 		err := latency.NewLatencyMeter(latOpt).Server()
 		if err != nil {
-			log.Println("latency server: ", err)
+			log.Println("latency server:", err)
+		} else {
+			log.Println("latency server done.")
 		}
 	}()
 
@@ -100,11 +108,7 @@ func RunServers(tpOpt throughput.Options, latOpt latency.Options) {
 }
 
 func main() {
-
-	log.SetFlags(log.LstdFlags | log.Lshortfile)
-
-	log.Println("Running...")
-
+	log.SetFlags(0)
 	var c bool
 	var latencyOpts string
 	var throughputOpts string

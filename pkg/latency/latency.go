@@ -18,7 +18,6 @@ package latency
 
 import (
 	"fmt"
-	"log"
 	"net"
 
 	"time"
@@ -66,21 +65,12 @@ type Result struct {
 
 type LatencyMeter struct {
 	Options
-	logger *log.Logger
 }
 
 // NewLatencyMeter creates a new latency meter.
 func NewLatencyMeter(options Options) *LatencyMeter {
 	return &LatencyMeter{
 		Options: options,
-		logger:  log.Default(),
-	}
-}
-
-// WithLogger sets the logger for the latency meter.
-func WithLogger(logger *log.Logger) func(*LatencyMeter) {
-	return func(l *LatencyMeter) {
-		l.logger = logger
 	}
 }
 
@@ -102,7 +92,6 @@ func (lm *LatencyMeter) domainAndAddress() (func(string, string) (net.Conn, erro
 // Server starts a latency benchmark server. It returns once it participates
 // in one benchmark with the client.
 func (lm *LatencyMeter) Server() error {
-	lm.logger.Println("latency meter server starting...")
 	_, domain, address := lm.domainAndAddress()
 	l, err := net.Listen(domain, address)
 	if err != nil {
@@ -115,8 +104,6 @@ func (lm *LatencyMeter) Server() error {
 		return err
 	}
 	defer conn.Close()
-
-	lm.logger.Println("connected ", conn.LocalAddr(), conn.RemoteAddr())
 
 	buf := make([]byte, lm.MsgSize)
 	for n := 0; n < lm.NumPings; n++ {
@@ -169,9 +156,7 @@ func (lm *LatencyMeter) ClientConn(conn net.Conn) (*Result, error) {
 		}
 	}
 	elapsed := time.Since(t1)
-	lm.logger.Println("numpings", pingsSent, "elapsed", elapsed)
 	totalpings := pingsSent * 2
-	lm.logger.Println("client done")
 
 	return &Result{
 		ElapsedTime: elapsed,
@@ -183,7 +168,6 @@ func (lm *LatencyMeter) ClientConn(conn net.Conn) (*Result, error) {
 // Client starts a latency benchmark client and returns the results after
 // the benchmark is complete.
 func (lm *LatencyMeter) Client() (*Result, error) {
-	lm.logger.Println("latency meter client running")
 	dial, domain, address := lm.domainAndAddress()
 	conn, err := dial(domain, address)
 	if err != nil {
