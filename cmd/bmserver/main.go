@@ -18,9 +18,10 @@ package main
 
 import (
 	"flag"
-	bmServer "github.com/kubermatic/benchmate/pkg/server"
 	"log"
 	"net/http"
+
+	bmServer "github.com/kubermatic/benchmate/pkg/server"
 )
 
 func main() {
@@ -28,7 +29,8 @@ func main() {
 	flag.StringVar(&addr, "addr", ":8080", "Address to listen on")
 	flag.Parse()
 
-	http.HandleFunc("/benchmate", bmServer.BenchmateHandler)
-	http.HandleFunc("/exit", bmServer.ExitHandler)
-	log.Fatal(http.ListenAndServe(addr, nil))
+	mux := http.NewServeMux()
+	mux.HandleFunc("/benchmate/throughput", bmServer.Throughput)
+	mux.HandleFunc("/benchmate/latency", bmServer.Latency)
+	log.Fatal(http.ListenAndServe(addr, mux))
 }

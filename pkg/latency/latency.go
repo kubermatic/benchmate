@@ -19,7 +19,6 @@ package latency
 import (
 	"fmt"
 	"net"
-
 	"time"
 )
 

@@ -133,7 +133,7 @@ func (tm *ThroughputMeter) ClientConn(conn net.Conn) (*Result, error) {
 			return nil, fmt.Errorf("bad nwrite = %d", nwrite)
 		}
 
-		msgSent = n
+		msgSent = n + 1
 		if time.Now().After(stopTime) {
 			break
 		}

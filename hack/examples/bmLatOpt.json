@@ -1,0 +1,9 @@
+{
+  "msgSize": 128,
+  "numPings": 1000,
+  "tcpAddress": ":13501",
+  "unixAddress": "/tmp/lat_benchmark.sock",
+  "unixDomain": false,
+  "clientPort": 13504,
+  "timeout": 120000
+}

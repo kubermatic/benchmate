@@ -20,63 +20,139 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/kubermatic/benchmate/pkg/latency"
-	"github.com/kubermatic/benchmate/pkg/throughput"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/kubermatic/benchmate/pkg/latency"
+	"github.com/kubermatic/benchmate/pkg/throughput"
 )
 
-func TestName(t *testing.T) {
-	s := httptest.NewServer(http.HandlerFunc(BenchmateHandler))
-	defer s.Close()
-	rand.Seed(time.Now().UnixNano())
+func TestEndpoints(t *testing.T) {
+	mux := http.NewServeMux()
+	mux.HandleFunc("/benchmate/latency", Latency)
+	mux.HandleFunc("/benchmate/throughput", Throughput)
 
-	randPort := func() int {
-		return 1234 + rand.Intn(1<<16)
-	}
+	s := httptest.NewServer(mux)
+	defer s.Close()
+
+	c := httptest.NewServer(mux)
+	defer c.Close()
+
+	rand.Seed(time.Now().UnixNano())
 
 	tpOpt := throughput.DefaultOptions()
 	latOpt := latency.DefaultOptions()
+
 	tpOpt.ClientPort = randPort()
 	tpOpt.TcpAddress = fmt.Sprintf(":%d", randPort())
 	latOpt.ClientPort = randPort()
 	latOpt.TcpAddress = fmt.Sprintf(":%d", randPort())
 	latOpt.NumPings = 100000
 
-	resp, err := doReq(s.URL, &Request{
-		ThroughputOptions: &tpOpt,
-		LatencyOptions:    &latOpt,
-	})
-	if err != nil {
-		t.Fatal(err)
+	tests := []struct {
+		name      string
+		runServer func()
+		runClient func()
+	}{
+		{
+			name: "latency",
+			runServer: func() {
+				_, err := doReq(s.URL+"/benchmate/latency", &Request{
+					LatencyOptions: &latOpt,
+				})
+				if err != nil {
+					t.Errorf("%s: %v", t.Name(), err)
+				}
+			},
+			runClient: func() {
+				resp, err := doReq(s.URL+"/benchmate/latency", &Request{
+					LatencyOptions: &latOpt,
+					Client:         true,
+				})
+				if err != nil {
+					t.Error(err)
+				}
+
+				data, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					t.Error(err)
+				}
+
+				result := new(latency.Result)
+				err = json.Unmarshal(data, &result)
+				if err != nil {
+					t.Error(err)
+				}
+
+				if result.AvgLatency == 0 {
+					t.Errorf("%s: %v", t.Name(), "latency is 0")
+				}
+
+				t.Log("latency result:", prettyJSON(result))
+			},
+		},
+		{
+			name: "throughput",
+			runServer: func() {
+				_, err := doReq(s.URL+"/benchmate/throughput", &Request{
+					ThroughputOptions: &tpOpt,
+				})
+				if err != nil {
+					t.Errorf("%s: %v", t.Name(), err)
+				}
+			},
+			runClient: func() {
+				resp, err := doReq(s.URL+"/benchmate/throughput", &Request{
+					ThroughputOptions: &tpOpt,
+					Client:            true,
+				})
+				if err != nil {
+					t.Error(err)
+				}
+
+				data, err := ioutil.ReadAll(resp.Body)
+				if err != nil {
+					t.Error(err)
+				}
+
+				result := new(throughput.Result)
+				err = json.Unmarshal(data, &result)
+				if err != nil {
+					t.Error(err)
+				}
+
+				if result.ThroughputMBPerSec == 0 {
+					t.Errorf("%s: %v", t.Name(), "throughput is 0")
+				}
+
+				t.Log("throughput result:", prettyJSON(result))
+			},
+		},
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatal(err)
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			go test.runServer()
+			time.Sleep(time.Second)
+			test.runClient()
+		})
 	}
-	fmt.Println(string(body))
+}
 
-	c := httptest.NewServer(http.HandlerFunc(BenchmateHandler))
-	defer c.Close()
-	resp, err = doReq(c.URL, &Request{
-		ThroughputOptions: &tpOpt,
-		LatencyOptions:    &latOpt,
-		Client:            true,
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
+func randPort() int {
+	return 1234 + rand.Intn(1<<16)
+}
 
-	body, err = ioutil.ReadAll(resp.Body)
+func prettyJSON(x interface{}) string {
+	b, err := json.MarshalIndent(x, "", "  ")
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
-	fmt.Println(string(body))
+	return string(b)
 }
 
 func toReader(r *Request) *bytes.Reader {

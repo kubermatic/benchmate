@@ -18,90 +18,101 @@ package server
 
 import (
 	"encoding/json"
-	"github.com/kubermatic/benchmate/pkg/latency"
-	"github.com/kubermatic/benchmate/pkg/throughput"
 	"io/ioutil"
 	"log"
 	"net/http"
-	"os"
+
+	"github.com/kubermatic/benchmate/pkg/latency"
+	"github.com/kubermatic/benchmate/pkg/throughput"
 )
 
 type Request struct {
-	ThroughputOptions *throughput.Options `json:"throughput"`
-	LatencyOptions    *latency.Options    `json:"latency"`
+	ThroughputOptions *throughput.Options `json:"tpOpt"`
+	LatencyOptions    *latency.Options    `json:"latOpt"`
 	Client            bool                `json:"client"`
+	ServerTimeout     int                 `json:"serverTimeout"`
 }
 
-func ExitHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("Exiting...")
-	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write([]byte("Exiting..."))
-	os.Exit(0)
-}
-
-func BenchmateHandler(w http.ResponseWriter, r *http.Request) {
+func Throughput(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
-		panic(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
 	req := new(Request)
 	err = json.Unmarshal(body, req)
 	if err != nil {
-		panic(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
 	}
 
-	if req.ThroughputOptions != nil {
+	if req.ThroughputOptions == nil {
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-		if req.Client {
-			log.Println("running throughput client")
-			func() {
-				resp, err := throughput.NewThroughputMeter(*req.ThroughputOptions).Client()
-				if err != nil {
-					log.Println(err)
-				}
-				err = json.NewEncoder(w).Encode(resp)
-				if err != nil {
-					log.Println(err)
-				}
-			}()
-		} else {
-			log.Println("running throughput server")
-			if err != nil {
-				panic(err)
-			}
-			go func() {
-				err = throughput.NewThroughputMeter(*req.ThroughputOptions).Server()
-				if err != nil {
-					log.Println(err)
-				}
-			}()
+	if req.Client {
+		log.Println("running throughput client")
+		resp, err := throughput.NewThroughputMeter(*req.ThroughputOptions).Client()
+		if err != nil {
+			log.Println(err)
+		}
+		err = json.NewEncoder(w).Encode(resp)
+		if err != nil {
+			log.Println(err)
+		}
+	} else {
+		log.Println("running throughput server")
+		if err != nil {
+			panic(err)
+		}
+		err = throughput.NewThroughputMeter(*req.ThroughputOptions).Server()
+		if err != nil {
+			log.Println(err)
 		}
 	}
+}
 
-	if req.LatencyOptions != nil {
-		if req.Client {
-			log.Println("running latency client")
-			func() {
-				result, err := latency.NewLatencyMeter(*req.LatencyOptions).Client()
-				if err != nil {
-					log.Println(err)
-				}
+func Latency(w http.ResponseWriter, r *http.Request) {
+	body, err := ioutil.ReadAll(r.Body)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-				err = json.NewEncoder(w).Encode(result)
-				if err != nil {
-					log.Println(err)
-				}
-			}()
-		} else {
-			log.Println("running latency server")
+	req := new(Request)
+	err = json.Unmarshal(body, req)
+	if err != nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
 
-			go func() {
-				err = latency.NewLatencyMeter(*req.LatencyOptions).Server()
-				if err != nil {
-					log.Println(err)
-				}
-			}()
+	if req.LatencyOptions == nil {
+		log.Println(err)
+		w.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if req.Client {
+		log.Println("running latency client")
+		result, err := latency.NewLatencyMeter(*req.LatencyOptions).Client()
+		if err != nil {
+			log.Println(err)
+		}
+
+		err = json.NewEncoder(w).Encode(result)
+		if err != nil {
+			log.Println(err)
+		}
+	} else {
+		log.Println("running latency server")
+
+		err = latency.NewLatencyMeter(*req.LatencyOptions).Server()
+		if err != nil {
+			log.Println(err)
 		}
 	}
 }
