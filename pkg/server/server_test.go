@@ -61,17 +61,17 @@ func TestEndpoints(t *testing.T) {
 		{
 			name: "latency",
 			runServer: func() {
-				_, err := doReq(s.URL+"/benchmate/latency", &Request{
-					LatencyOptions: &latOpt,
+				_, err := doReq(s.URL+"/benchmate/latency", &LatencyRequest{
+					Options: &latOpt,
 				})
 				if err != nil {
 					t.Errorf("%s: %v", t.Name(), err)
 				}
 			},
 			runClient: func() {
-				resp, err := doReq(s.URL+"/benchmate/latency", &Request{
-					LatencyOptions: &latOpt,
-					Client:         true,
+				resp, err := doReq(s.URL+"/benchmate/latency", &LatencyRequest{
+					Options: &latOpt,
+					Client:  true,
 				})
 				if err != nil {
 					t.Error(err)
@@ -98,17 +98,17 @@ func TestEndpoints(t *testing.T) {
 		{
 			name: "throughput",
 			runServer: func() {
-				_, err := doReq(s.URL+"/benchmate/throughput", &Request{
-					ThroughputOptions: &tpOpt,
+				_, err := doReq(s.URL+"/benchmate/throughput", &ThroughputRequest{
+					Options: &tpOpt,
 				})
 				if err != nil {
 					t.Errorf("%s: %v", t.Name(), err)
 				}
 			},
 			runClient: func() {
-				resp, err := doReq(s.URL+"/benchmate/throughput", &Request{
-					ThroughputOptions: &tpOpt,
-					Client:            true,
+				resp, err := doReq(s.URL+"/benchmate/throughput", &ThroughputRequest{
+					Options: &tpOpt,
+					Client:  true,
 				})
 				if err != nil {
 					t.Error(err)
@@ -155,7 +155,7 @@ func prettyJSON(x interface{}) string {
 	return string(b)
 }
 
-func toReader(r *Request) *bytes.Reader {
+func toReader(r interface{}) *bytes.Reader {
 	data, err := json.Marshal(r)
 	if err != nil {
 		panic(err)
@@ -163,7 +163,7 @@ func toReader(r *Request) *bytes.Reader {
 	return bytes.NewReader(data)
 }
 
-func doReq(addr string, r *Request) (*http.Response, error) {
+func doReq(addr string, r interface{}) (*http.Response, error) {
 	req, err := http.NewRequest("GET", addr, toReader(r))
 	if err != nil {
 		return nil, err

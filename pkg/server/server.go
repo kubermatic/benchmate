@@ -26,11 +26,9 @@ import (
 	"github.com/kubermatic/benchmate/pkg/throughput"
 )
 
-type Request struct {
-	ThroughputOptions *throughput.Options `json:"tpOpt"`
-	LatencyOptions    *latency.Options    `json:"latOpt"`
-	Client            bool                `json:"client"`
-	ServerTimeout     int                 `json:"serverTimeout"`
+type ThroughputRequest struct {
+	*throughput.Options
+	Client bool `json:"client"`
 }
 
 func Throughput(w http.ResponseWriter, r *http.Request) {
@@ -40,21 +38,16 @@ func Throughput(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req := new(Request)
+	req := new(ThroughputRequest)
 	err = json.Unmarshal(body, req)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	if req.ThroughputOptions == nil {
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	if req.Client {
 		log.Println("running throughput client")
-		resp, err := throughput.NewThroughputMeter(*req.ThroughputOptions).Client()
+		resp, err := throughput.NewThroughputMeter(*req.Options).Client()
 		if err != nil {
 			log.Println(err)
 		}
@@ -67,11 +60,16 @@ func Throughput(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		err = throughput.NewThroughputMeter(*req.ThroughputOptions).Server()
+		err = throughput.NewThroughputMeter(*req.Options).Server()
 		if err != nil {
 			log.Println(err)
 		}
 	}
+}
+
+type LatencyRequest struct {
+	*latency.Options
+	Client bool `json:"client"`
 }
 
 func Latency(w http.ResponseWriter, r *http.Request) {
@@ -82,7 +80,7 @@ func Latency(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	req := new(Request)
+	req := new(LatencyRequest)
 	err = json.Unmarshal(body, req)
 	if err != nil {
 		log.Println(err)
@@ -90,15 +88,9 @@ func Latency(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if req.LatencyOptions == nil {
-		log.Println(err)
-		w.WriteHeader(http.StatusBadRequest)
-		return
-	}
-
 	if req.Client {
 		log.Println("running latency client")
-		result, err := latency.NewLatencyMeter(*req.LatencyOptions).Client()
+		result, err := latency.NewLatencyMeter(*req.Options).Client()
 		if err != nil {
 			log.Println(err)
 		}
@@ -110,7 +102,7 @@ func Latency(w http.ResponseWriter, r *http.Request) {
 	} else {
 		log.Println("running latency server")
 
-		err = latency.NewLatencyMeter(*req.LatencyOptions).Server()
+		err = latency.NewLatencyMeter(*req.Options).Server()
 		if err != nil {
 			log.Println(err)
 		}
