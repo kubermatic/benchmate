@@ -22,27 +22,27 @@ import (
 	"time"
 )
 
-// Options holds the options for the latency benchmark.
+// Options holds the options for the latency benchmarks.
 type Options struct {
-	MsgSize     int    `json:"msgSize"`
-	NumPings    int    `json:"numPings"`
-	TcpAddress  string `json:"tcpAddress"`
-	UnixAddress string `json:"unixAddress"`
-	UnixDomain  bool   `json:"unixDomain"`
-	ClientPort  int    `json:"clientPort"`
-	Timeout     int    `json:"timeout"` // in milliseconds
+	MsgSize     int    `json:"msgSize"`     // size of messages in bytes
+	NumPings    int    `json:"numPings"`    // number of pings to send
+	TcpAddress  string `json:"tcpAddress"`  // server listens on this address
+	UnixAddress string `json:"unixAddress"` // server listens on this address when UnixDomain is true
+	UnixDomain  bool   `json:"unixDomain"`  // set to true when using unix domain sockets
+	ClientPort  int    `json:"clientPort"`  // local port used by client
+	Timeout     int    `json:"timeout"`     // in milliseconds
 }
 
-// DefaultOptions returns default latency benchmark options.
-//	Options{
-//		MsgSize:     128,                       // in bytes
-//		NumPings:    1000,                      // number of pings to send
-//		TcpAddress:  ":13501",                  // tcp address to send to
-//		UnixAddress: "/tmp/lat_benchmark.sock", // unix address to send to
-//		UnixDomain:  false,                     // whether to use unix domain socket
-//		ClientPort:  13504,                     // port that client contacts from
-//		Timeout:     120000,                    // in milliseconds
-//	}
+// DefaultOptions the default values of the options.
+//  {
+//		MsgSize:     128,
+//		NumPings:    1000,
+//		TcpAddress:  ":13501",
+//		UnixAddress: "/tmp/lat_benchmark.sock",
+//		UnixDomain:  false,
+//		ClientPort:  13504,
+//		Timeout:     120000,
+//  }
 func DefaultOptions() Options {
 	return Options{
 		MsgSize:     128,
@@ -57,39 +57,27 @@ func DefaultOptions() Options {
 
 // Result holds the results of a latency benchmark.
 type Result struct {
-	ElapsedTime time.Duration `json:"elapsedTime"`
-	NumPings    int           `json:"numPings"`
-	AvgLatency  time.Duration `json:"avgLatency"`
+	ElapsedTime time.Duration `json:"elapsedTime"` // time elapsed in nanoseconds
+	NumPings    int           `json:"numPings"`    // number of pings sent
+	AvgLatency  time.Duration `json:"avgLatency"`  // in nanoseconds ( elapsedTime / numPings )
 }
 
+// LatencyMeter allows you to run clients and servers to measure latency
+// of the network between them.
 type LatencyMeter struct {
 	Options
 }
 
-// NewLatencyMeter creates a new latency meter.
+// NewLatencyMeter returns a new LatencyMeter instance.
 func NewLatencyMeter(options Options) *LatencyMeter {
 	return &LatencyMeter{
 		Options: options,
 	}
 }
 
-// domainAndAddress returns the domain,address pair for net functions to connect
-// to, depending on the value of the benchmate.UnixDomain flag.
-func (lm *LatencyMeter) domainAndAddress() (func(string, string) (net.Conn, error), string, string) {
-	if lm.UnixDomain {
-		return net.Dial, "unix", lm.UnixAddress
-	} else {
-		dialer := &net.Dialer{
-			LocalAddr: &net.TCPAddr{
-				Port: lm.ClientPort,
-			},
-		}
-		return dialer.Dial, "tcp", lm.TcpAddress
-	}
-}
-
-// Server starts a latency benchmark server. It returns once it participates
-// in one benchmark with the client.
+// Server starts a latency benchmark server.
+// Once a client connects and starts sending messages, the server reads and replies with the same message.
+// It returns when client closes the connection.
 func (lm *LatencyMeter) Server() error {
 	_, domain, address := lm.domainAndAddress()
 	l, err := net.Listen(domain, address)
@@ -125,9 +113,7 @@ func (lm *LatencyMeter) Server() error {
 	return nil
 }
 
-// ClientConn starts a latency benchmark client. It is like LatencyMeter.Client
-// but it takes a net.Conn as an argument. This is useful when you want to custom
-// net.Conn as in the case of konnectivity-benchmate.
+// ClientConn like Client with a connection argument.
 func (lm *LatencyMeter) ClientConn(conn net.Conn) (*Result, error) {
 	buf := make([]byte, lm.MsgSize)
 	t1 := time.Now()
@@ -164,8 +150,8 @@ func (lm *LatencyMeter) ClientConn(conn net.Conn) (*Result, error) {
 	}, nil
 }
 
-// Client starts a latency benchmark client and returns the results after
-// the benchmark is complete.
+// Client tries to send NumMsg messages of size MsgSize to the server within Timeout.
+// Calculates the average latency of the messages.
 func (lm *LatencyMeter) Client() (*Result, error) {
 	dial, domain, address := lm.domainAndAddress()
 	conn, err := dial(domain, address)
@@ -174,4 +160,17 @@ func (lm *LatencyMeter) Client() (*Result, error) {
 	}
 	defer conn.Close()
 	return lm.ClientConn(conn)
+}
+
+func (lm *LatencyMeter) domainAndAddress() (func(string, string) (net.Conn, error), string, string) {
+	if lm.UnixDomain {
+		return net.Dial, "unix", lm.UnixAddress
+	} else {
+		dialer := &net.Dialer{
+			LocalAddr: &net.TCPAddr{
+				Port: lm.ClientPort,
+			},
+		}
+		return dialer.Dial, "tcp", lm.TcpAddress
+	}
 }
