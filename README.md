@@ -6,7 +6,7 @@ handlers to quickly add network benchmarking functionality to your services.
 
 ## Tools
 
-### cmd/benchmate
+### [cmd/benchmate](cmd/benchmate)
 `benchmate` measures latency and throughput between two nodes. You can run it on one node in the server mode and on
 another node in the client mode. If the the client and server can talk to each other, you should get the network
 performance stats at the client. This tool supports both TCP and Unix Domain sockets.
@@ -18,8 +18,68 @@ performance stats at the client. This tool supports both TCP and Unix Domain soc
 **Run on two nodes in a cluster using docker:**
 
 
+_On one node run server:_
 
-### cmd/konnectivity-benchmate
+tpOpt.json:
+```
+{
+    "msgSize": 250000,
+    "numMsg": 10000,
+    "tcpAddress": ":13500",
+    "timeout": 120000
+}
+```
+
+latOpt.json:
+```
+{
+    "msgSize": 128,
+    "numPings": 1000,
+    "tcpAddress": ":13501",
+    "timeout": 120000
+}
+```
+Command:
+```
+docker run -it --rm --network host -v $(pwd):/opts \
+    quay.io/kubermatic-labs/benchmate:latest \
+    --latOpt=/opts/latOpt.json \
+    --tpOpt=/opts/tpOpt.json
+```
+
+_On another node run client:_
+
+tpOpt.json:
+```
+{
+    "msgSize": 250000,
+    "numMsg": 10000,
+    "tcpAddress": "<IP OF SERVER HERE>:13500",
+    "clientPort": 13503,
+    "timeout": 120000
+}
+```
+
+latOpt.json:
+```
+{
+    "msgSize": 128,
+    "numPings": 1000,
+    "tcpAddress": "<IP OF SERVER HERE>:13501",
+    "timeout": 120000
+}
+```
+Command:
+```
+docker run -it --rm --network host -v $(pwd):/opts \
+    quay.io/kubermatic-labs/benchmate:latest -c \
+    --latOpt=/opts/latOpt.json \
+    --tpOpt=/opts/tpOpt.json
+```
+
+
+
+### [cmd/konnectivity-benchmate](cmd/konnectivity-benchmate)
 Client for benchmarking [Konnectivity](https://kubernetes.io/docs/tasks/extend-kubernetes/setup-konnectivity/). You can
 run benchmark server on one node and point `konnectivity-benchmate` UDS of konnectivity proxy server.
 
