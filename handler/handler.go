@@ -19,12 +19,11 @@ package handler
 
 import (
 	"encoding/json"
+	"github.com/kubermatic/benchmate/latency"
+	"github.com/kubermatic/benchmate/throughput"
 	"io/ioutil"
 	"log"
 	"net/http"
-
-	"github.com/kubermatic/benchmate/pkg/latency"
-	"github.com/kubermatic/benchmate/pkg/throughput"
 )
 
 // ThroughputRequest provides options for throughput benchmarks.

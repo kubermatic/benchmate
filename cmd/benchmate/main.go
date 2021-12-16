@@ -41,13 +41,12 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"github.com/kubermatic/benchmate/latency"
+	"github.com/kubermatic/benchmate/throughput"
 	"io"
 	"io/ioutil"
 	"log"
 	"sync"
-
-	"github.com/kubermatic/benchmate/pkg/latency"
-	"github.com/kubermatic/benchmate/pkg/throughput"
 )
 
 func prettyJSON(x interface{}) string {

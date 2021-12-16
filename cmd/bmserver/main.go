@@ -18,10 +18,9 @@ package main
 
 import (
 	"flag"
+	bmHandler "github.com/kubermatic/benchmate/handler"
 	"log"
 	"net/http"
-
-	bmHandler "github.com/kubermatic/benchmate/pkg/handler"
 )
 
 func main() {

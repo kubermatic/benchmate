@@ -20,15 +20,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/kubermatic/benchmate/latency"
+	"github.com/kubermatic/benchmate/throughput"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
-
-	"github.com/kubermatic/benchmate/pkg/latency"
-	"github.com/kubermatic/benchmate/pkg/throughput"
 )
 
 func TestEndpoints(t *testing.T) {
@@ -69,15 +68,10 @@ func TestEndpoints(t *testing.T) {
 				}
 			},
 			runClient: func() {
-				resp, err := doReq(s.URL+"/benchmate/latency", &LatencyRequest{
+				data, err := doReq(s.URL+"/benchmate/latency", &LatencyRequest{
 					Options: &latOpt,
 					Client:  true,
 				})
-				if err != nil {
-					t.Error(err)
-				}
-
-				data, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
 					t.Error(err)
 				}
@@ -106,15 +100,10 @@ func TestEndpoints(t *testing.T) {
 				}
 			},
 			runClient: func() {
-				resp, err := doReq(s.URL+"/benchmate/throughput", &ThroughputRequest{
+				data, err := doReq(s.URL+"/benchmate/throughput", &ThroughputRequest{
 					Options: &tpOpt,
 					Client:  true,
 				})
-				if err != nil {
-					t.Error(err)
-				}
-
-				data, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
 					t.Error(err)
 				}
@@ -144,7 +133,7 @@ func TestEndpoints(t *testing.T) {
 }
 
 func randPort() int {
-	return 1234 + rand.Intn(1<<16)
+	return 1234 + rand.Intn(1<<10)
 }
 
 func prettyJSON(x interface{}) string {
@@ -163,7 +152,7 @@ func toReader(r interface{}) *bytes.Reader {
 	return bytes.NewReader(data)
 }
 
-func doReq(addr string, r interface{}) (*http.Response, error) {
+func doReq(addr string, r interface{}) ([]byte, error) {
 	req, err := http.NewRequest("GET", addr, toReader(r))
 	if err != nil {
 		return nil, err
@@ -173,5 +162,12 @@ func doReq(addr string, r interface{}) (*http.Response, error) {
 	if err != nil {
 		return nil, err
 	}
-	return resp, nil
+	defer func() { _ = resp.Body.Close() }()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
 }

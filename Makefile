@@ -13,13 +13,13 @@
 #	limitations under the License.
 #
 
-benchmate: pkg cmd/benchmate
+benchmate:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o _build/benchmate cmd/benchmate/main.go
 
 docker-build-benchmate: benchmate
 	docker build -t quay.io/kubermatic-labs/benchmate:latest -f benchmate.Dockerfile .
 
-konnectivity-benchmate: pkg cmd/konnectivity-benchmate
+konnectivity-benchmate:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o _build/konnectivity-benchmate cmd/konnectivity-benchmate/main.go
 
 docker-build-konnectivity-benchmate: konnectivity-benchmate
@@ -30,6 +30,7 @@ lint:
 		--verbose \
 		--print-resources-usage \
 		./...
+
 build:
 	go build -v ./...
 
