@@ -83,7 +83,7 @@ docker run -it --rm --network host -v $(pwd):/opts \
 Client for benchmarking [Konnectivity](https://kubernetes.io/docs/tasks/extend-kubernetes/setup-konnectivity/). You can
 run benchmark server on one node and point `konnectivity-benchmate` UDS of konnectivity proxy server.
 
-### cmd/bmserver
+### [cmd/bmserver](cmd/bmserver)
 This program demonstrates how you can easily add network perf measurement to your application. For example, if two
 microservices are communicating over a network, you can measure the latency and throughput of the network. You register
 HTTP handlers like [pprof](https://pkg.go.dev/net/http/pprof). 

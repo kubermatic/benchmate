@@ -135,7 +135,7 @@ func (lm *LatencyMeter) ClientConn(conn net.Conn) (*Result, error) {
 			return nil, fmt.Errorf("bad nread = %d", nread)
 		}
 
-		pingsSent = n
+		pingsSent = n + 1
 		if time.Now().After(stopTime) {
 			break
 		}
@@ -145,13 +145,13 @@ func (lm *LatencyMeter) ClientConn(conn net.Conn) (*Result, error) {
 
 	return &Result{
 		ElapsedTime: elapsed,
-		NumPings:    int(totalpings),
+		NumPings:    totalpings,
 		AvgLatency:  time.Duration(int(elapsed.Nanoseconds()) / totalpings),
 	}, nil
 }
 
-// Client tries to send NumMsg messages of size MsgSize to the server within Timeout.
-// Calculates the average latency of the messages.
+// Client sends a message of MsgSize bytes to the server and reads the reply from the server.
+// It calculates average latency over all the request/responses and returns the result.
 func (lm *LatencyMeter) Client() (*Result, error) {
 	dial, domain, address := lm.domainAndAddress()
 	conn, err := dial(domain, address)
