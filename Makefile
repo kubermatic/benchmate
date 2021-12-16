@@ -17,7 +17,24 @@ benchmate: pkg cmd/benchmate
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o _build/benchmate cmd/benchmate/main.go
 
 docker-build-benchmate: benchmate
-	docker build -t quay.io/kubermatic-labs/benchmate:latest .
+	docker build -t quay.io/kubermatic-labs/benchmate:latest -f benchmate.Dockerfile .
+
+konnectivity-benchmate: pkg cmd/konnectivity-benchmate
+	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o _build/konnectivity-benchmate cmd/konnectivity-benchmate/main.go
+
+docker-build-konnectivity-benchmate: konnectivity-benchmate
+	docker build -t quay.io/kubermatic-labs/konnectivity-benchmate:latest -f konnectivity-benchmate.Dockerfile .
+
+lint:
+	golangci-lint run \
+		--verbose \
+		--print-resources-usage \
+		./...
+build:
+	go build -v ./...
+
+test:
+	go test -v -race ./...
 
 clean:
 	rm -rf _build
