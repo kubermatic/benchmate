@@ -1,28 +1,70 @@
-# TODO
-
-Check [the following wiki page](https://app.nuclino.com/Loodse/02-Engineering/Open-sourcing-projects-646a5b93-27d5-4245-83bc-cf10a5b9ad3d) for instructions how to setup everything needed to open source the project. Once you're done, make sure to delete this TODO part.
+# Benchmate
 
 ## Overview
+This repository contains various network benchmarking tools, packages that simplify construction of such tools and
+handlers to quickly add network benchmarking functionality to your services.
 
-TODO
+## Tools
 
-## Installation
+### cmd/benchmate
+`benchmate` measures latency and throughput between two nodes. You can run it on one node in the server mode and on
+another node in the client mode. If the the client and server can talk to each other, you should get the network
+performance stats at the client. This tool supports both TCP and Unix Domain sockets.
 
-We strongly recommend that you use an [official release][3] of XXX. The tarballs for each release contain the
-command-line client **and** version-specific sample YAML files for deploying XXX to your cluster.
-Follow the instructions under the **Install** section of [our documentation][21] to get started.
+**Run it on localhost:**
 
-_The code and sample YAML files in the master branch of the XXX repository are under active development and are not guaranteed to be stable. Use them at your own risk!_
+![./hacks/benchmate-localhost.gif](./hack/benchmate-localhost.gif) 
 
-## More information
+**Run on two nodes in a cluster using docker:**
 
-[The documentation][21] provides a getting started guide, plus information about building from source, architecture, extending XXX, and more.
 
-Please use the version selector at the top of the site to ensure you are using the appropriate documentation for your version of XXX.
+
+### cmd/konnectivity-benchmate
+Client for benchmarking [Konnectivity](https://kubernetes.io/docs/tasks/extend-kubernetes/setup-konnectivity/). You can
+run benchmark server on one node and point `konnectivity-benchmate` UDS of konnectivity proxy server.
+
+### cmd/bmserver
+This program demonstrates how you can easily add network perf measurement to your application. For example, if two
+microservices are communicating over a network, you can measure the latency and throughput of the network. You register
+HTTP handlers like [pprof](https://pkg.go.dev/net/http/pprof). 
+```go
+	mux := http.NewServeMux()
+	mux.HandleFunc("/benchmate/throughput", bmHandler.Throughput)
+	mux.HandleFunc("/benchmate/latency", bmHandler.Latency)
+	log.Fatal(http.ListenAndServe(addr, mux))
+```
+
+You can then trigger handler on one service to run the
+server and on the other service to run the client.
+
+```
+$ curl http://localhost:8888/benchmate/latency --data '
+{
+    "msgSize": 128,
+    "numPings": 1000,
+    "tcpAddress": ":13501",
+    "timeout": 120000
+}
+'
+
+$ curl http://localhost:9999/benchmate/latency --data '
+{
+    "msgSize": 128,
+    "numPings": 1000,
+    "tcpAddress": ":13501",
+    "timeout": 120000,
+    "client": true
+}
+'
+```
+
+## Packages
+Packages `throughput` and `latency` contain functions that allow construction of clients and servers to benchmark uds,
+tcp sockets for variety of setups.
 
 ## Troubleshooting
 
-If you encounter issues [file an issue][1] or talk to us on the [#XXX channel][12] on the [Kubermatic Slack][15].
+If you encounter issues [file an issue][1] or talk to us on the [#kubermatic channel][12] on the [Kubermatic Slack][15].
 
 ## Contributing
 
@@ -44,14 +86,25 @@ Feedback and discussion are available on [the mailing list][11].
 
 See [the list of releases][3] to find out about feature changes.
 
+## References
+
+These programs are based on programs by Eli Bendersky (https://github.com/eliben). Original programs are in references
+folder.
+
+
 [1]: https://github.com/kubermatic/benchmate/issues
+
 [2]: https://github.com/kubermatic/benchmate/blob/master/CONTRIBUTING.md
+
 [3]: https://github.com/kubermatic/benchmate/releases
+
 [4]: https://github.com/kubermatic/benchmate/blob/master/CODE_OF_CONDUCT.md
 
 [11]: https://groups.google.com/forum/#!forum/kubermatic-dev
-[12]: https://kubermatic.slack.com/messages/benchmate
+
+[12]: https://kubermatic.slack.com/messages/kubermatic
+
 [13]: https://github.com/kubermatic/benchmate/blob/master/Zenhub.md
+
 [15]: http://slack.kubermatic.io/
 
-[21]: https://kubermatic.github.io/benchmate/

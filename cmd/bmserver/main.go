@@ -21,7 +21,7 @@ import (
 	"log"
 	"net/http"
 
-	bmServer "github.com/kubermatic/benchmate/pkg/server"
+	bmHandler "github.com/kubermatic/benchmate/pkg/handler"
 )
 
 func main() {
@@ -30,7 +30,7 @@ func main() {
 	flag.Parse()
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/benchmate/throughput", bmServer.Throughput)
-	mux.HandleFunc("/benchmate/latency", bmServer.Latency)
+	mux.HandleFunc("/benchmate/throughput", bmHandler.Throughput)
+	mux.HandleFunc("/benchmate/latency", bmHandler.Latency)
 	log.Fatal(http.ListenAndServe(addr, mux))
 }
