@@ -6,10 +6,16 @@ handlers to quickly add network benchmarking functionality to your services.
 
 ## Tools
 
+There are three tools:
+- [benchmate](#cmdbenchmate) -- a tool to run network benchmarks
+- [konnectivity-benchmate](#cmdkonnectivity-benchmate)-- client for benchmarking Konnectivity using benchmate. 
+- [bmserver](#cmdbmserver) -- a toy. 
+
 ### [cmd/benchmate](cmd/benchmate)
 `benchmate` measures latency and throughput between two nodes. You can run it on one node in the server mode and on
 another node in the client mode. If the the client and server can talk to each other, you should get the network
-performance stats at the client. This tool supports both TCP and Unix Domain sockets.
+performance stats at the client. This tool supports both TCP and Unix Domain sockets. You can specify parameters 
+for the benchmark using json files via `--latOpt=<filename>` for latency options and `--tpOpt=<filename>` for throughput options. Read the docs for details of the supported parameters.  
 
 **Run it on localhost:**
 
