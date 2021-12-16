@@ -30,8 +30,8 @@ import (
 
 func TestEndpoints(t *testing.T) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/benchmate/latency", Latency)
-	mux.HandleFunc("/benchmate/throughput", Throughput)
+	mux.HandleFunc("/benchmate/latency", LatencyHandler)
+	mux.HandleFunc("/benchmate/throughput", ThroughputHandler)
 
 	s := httptest.NewServer(mux)
 	defer s.Close()
@@ -59,7 +59,7 @@ func TestEndpoints(t *testing.T) {
 			name: "latency",
 			runServer: func() {
 				_, err := doReq(s.URL+"/benchmate/latency", &LatencyRequest{
-					LatencyOptions: &latOpt,
+					LatencyOptions: latOpt,
 				})
 				if err != nil {
 					t.Errorf("%s: %v", t.Name(), err)
@@ -67,7 +67,7 @@ func TestEndpoints(t *testing.T) {
 			},
 			runClient: func() {
 				data, err := doReq(s.URL+"/benchmate/latency", &LatencyRequest{
-					LatencyOptions: &latOpt,
+					LatencyOptions: latOpt,
 					Client:         true,
 				})
 				if err != nil {
@@ -80,9 +80,9 @@ func TestEndpoints(t *testing.T) {
 					t.Error(err)
 				}
 
-				//if result.NumPings != latOpt.NumPings*2 {
-				//	t.Errorf("%s: expected %d pings, got %d", t.Name(), latOpt.NumPings*2, result.NumPings)
-				//}
+				// if result.NumPings != latOpt.NumPings*2 {
+				//	 t.Errorf("%s: expected %d pings, got %d", t.Name(), latOpt.NumPings*2, result.NumPings)
+				// }
 
 				if result.AvgLatency == 0 {
 					t.Errorf("%s: %v", t.Name(), "latency is 0")
@@ -95,7 +95,7 @@ func TestEndpoints(t *testing.T) {
 			name: "throughput",
 			runServer: func() {
 				_, err := doReq(s.URL+"/benchmate/throughput", &ThroughputRequest{
-					ThroughputOptions: &tpOpt,
+					ThroughputOptions: tpOpt,
 				})
 				if err != nil {
 					t.Errorf("%s: %v", t.Name(), err)
@@ -103,7 +103,7 @@ func TestEndpoints(t *testing.T) {
 			},
 			runClient: func() {
 				data, err := doReq(s.URL+"/benchmate/throughput", &ThroughputRequest{
-					ThroughputOptions: &tpOpt,
+					ThroughputOptions: tpOpt,
 					Client:            true,
 				})
 				if err != nil {
@@ -116,9 +116,9 @@ func TestEndpoints(t *testing.T) {
 					t.Error(err)
 				}
 
-				//if result.NumMsg != 100000 {
-				//	t.Errorf("%s: %v", t.Name(), "numMsg is not 100000")
-				//}
+				// if result.NumMsg != 100000 {
+				//	 t.Errorf("%s: %v", t.Name(), "numMsg is not 100000")
+				// }
 
 				if result.ThroughputMBPerSec == 0 {
 					t.Errorf("%s: %v", t.Name(), "throughput is 0")

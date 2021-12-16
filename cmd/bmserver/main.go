@@ -29,7 +29,7 @@ func main() {
 	flag.Parse()
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/benchmate/throughput", bmHandler.Throughput)
-	mux.HandleFunc("/benchmate/latency", bmHandler.Latency)
+	mux.HandleFunc("/benchmate/throughput", bmHandler.ThroughputHandler)
+	mux.HandleFunc("/benchmate/latency", bmHandler.LatencyHandler)
 	log.Fatal(http.ListenAndServe(addr, mux))
 }
