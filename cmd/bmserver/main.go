@@ -18,7 +18,7 @@ package main
 
 import (
 	"flag"
-	bmHandler "github.com/kubermatic/benchmate/handler"
+	bmHandler "github.com/kubermatic/benchmate"
 	"log"
 	"net/http"
 )

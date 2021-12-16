@@ -22,8 +22,8 @@ import (
 	"time"
 )
 
-// Options holds the options for the latency benchmarks.
-type Options struct {
+// LatencyOptions holds the options for the latency benchmarks.
+type LatencyOptions struct {
 	MsgSize     int    `json:"msgSize"`     // size of messages in bytes
 	NumPings    int    `json:"numPings"`    // number of pings to send
 	TcpAddress  string `json:"tcpAddress"`  // server listens on this address
@@ -43,8 +43,8 @@ type Options struct {
 //		ClientPort:  13504,
 //		Timeout:     120000,
 //  }
-func DefaultOptions() Options {
-	return Options{
+func DefaultOptions() LatencyOptions {
+	return LatencyOptions{
 		MsgSize:     128,
 		NumPings:    1000,
 		TcpAddress:  ":13501",
@@ -65,13 +65,13 @@ type Result struct {
 // LatencyMeter allows you to run clients and servers to measure latency
 // of the network between them.
 type LatencyMeter struct {
-	Options
+	LatencyOptions
 }
 
 // NewLatencyMeter returns a new LatencyMeter instance.
-func NewLatencyMeter(options Options) *LatencyMeter {
+func NewLatencyMeter(options LatencyOptions) *LatencyMeter {
 	return &LatencyMeter{
-		Options: options,
+		LatencyOptions: options,
 	}
 }
 

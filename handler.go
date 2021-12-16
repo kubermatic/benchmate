@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // This package provides pporf like handlers for network performance analysis.
-package handler
+package benchmate
 
 import (
 	"encoding/json"
@@ -73,7 +73,7 @@ func Throughput(w http.ResponseWriter, r *http.Request) {
 // LatencyRequest provides options for latency benchmarks.
 // Set Client to true if you want the handler to run a client.
 type LatencyRequest struct {
-	*latency.Options
+	*latency.LatencyOptions
 	Client bool `json:"client"`
 }
 
@@ -96,7 +96,7 @@ func Latency(w http.ResponseWriter, r *http.Request) {
 
 	if req.Client {
 		log.Println("running latency client")
-		result, err := latency.NewLatencyMeter(*req.Options).Client()
+		result, err := latency.NewLatencyMeter(*req.LatencyOptions).Client()
 		if err != nil {
 			log.Println(err)
 		}
@@ -108,7 +108,7 @@ func Latency(w http.ResponseWriter, r *http.Request) {
 	} else {
 		log.Println("running latency server")
 
-		err = latency.NewLatencyMeter(*req.Options).Server()
+		err = latency.NewLatencyMeter(*req.LatencyOptions).Server()
 		if err != nil {
 			log.Println(err)
 		}

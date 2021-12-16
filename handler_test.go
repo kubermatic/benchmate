@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package handler
+package benchmate
 
 import (
 	"bytes"
@@ -61,7 +61,7 @@ func TestEndpoints(t *testing.T) {
 			name: "latency",
 			runServer: func() {
 				_, err := doReq(s.URL+"/benchmate/latency", &LatencyRequest{
-					Options: &latOpt,
+					LatencyOptions: &latOpt,
 				})
 				if err != nil {
 					t.Errorf("%s: %v", t.Name(), err)
@@ -69,8 +69,8 @@ func TestEndpoints(t *testing.T) {
 			},
 			runClient: func() {
 				data, err := doReq(s.URL+"/benchmate/latency", &LatencyRequest{
-					Options: &latOpt,
-					Client:  true,
+					LatencyOptions: &latOpt,
+					Client:         true,
 				})
 				if err != nil {
 					t.Error(err)
