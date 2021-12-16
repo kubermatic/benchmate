@@ -20,8 +20,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/kubermatic/benchmate/latency"
-	"github.com/kubermatic/benchmate/throughput"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -43,8 +41,8 @@ func TestEndpoints(t *testing.T) {
 
 	rand.Seed(time.Now().UnixNano())
 
-	tpOpt := throughput.DefaultOptions()
-	latOpt := latency.DefaultOptions()
+	tpOpt := DefaultThroughputOptions()
+	latOpt := DefaultLatencyOptions()
 
 	tpOpt.ClientPort = randPort()
 	tpOpt.TcpAddress = fmt.Sprintf(":%d", randPort())
@@ -76,11 +74,15 @@ func TestEndpoints(t *testing.T) {
 					t.Error(err)
 				}
 
-				result := new(latency.Result)
+				result := new(LatencyResult)
 				err = json.Unmarshal(data, &result)
 				if err != nil {
 					t.Error(err)
 				}
+
+				//if result.NumPings != latOpt.NumPings*2 {
+				//	t.Errorf("%s: expected %d pings, got %d", t.Name(), latOpt.NumPings*2, result.NumPings)
+				//}
 
 				if result.AvgLatency == 0 {
 					t.Errorf("%s: %v", t.Name(), "latency is 0")
@@ -93,7 +95,7 @@ func TestEndpoints(t *testing.T) {
 			name: "throughput",
 			runServer: func() {
 				_, err := doReq(s.URL+"/benchmate/throughput", &ThroughputRequest{
-					Options: &tpOpt,
+					ThroughputOptions: &tpOpt,
 				})
 				if err != nil {
 					t.Errorf("%s: %v", t.Name(), err)
@@ -101,18 +103,22 @@ func TestEndpoints(t *testing.T) {
 			},
 			runClient: func() {
 				data, err := doReq(s.URL+"/benchmate/throughput", &ThroughputRequest{
-					Options: &tpOpt,
-					Client:  true,
+					ThroughputOptions: &tpOpt,
+					Client:            true,
 				})
 				if err != nil {
 					t.Error(err)
 				}
 
-				result := new(throughput.Result)
+				result := new(ThroughputResult)
 				err = json.Unmarshal(data, &result)
 				if err != nil {
 					t.Error(err)
 				}
+
+				//if result.NumMsg != 100000 {
+				//	t.Errorf("%s: %v", t.Name(), "numMsg is not 100000")
+				//}
 
 				if result.ThroughputMBPerSec == 0 {
 					t.Errorf("%s: %v", t.Name(), "throughput is 0")

@@ -20,8 +20,7 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"github.com/kubermatic/benchmate/latency"
-	"github.com/kubermatic/benchmate/throughput"
+	"github.com/kubermatic/benchmate"
 	"google.golang.org/grpc"
 	"log"
 	"net"
@@ -58,7 +57,7 @@ func main() {
 		panic(err)
 	}
 
-	tpResult, err := throughput.NewThroughputMeter(throughput.DefaultOptions()).ClientConn(proxyConn)
+	tpResult, err := benchmate.NewThroughputMeter(benchmate.DefaultThroughputOptions()).ClientConn(proxyConn)
 	if err != nil {
 		log.Println(err)
 	}
@@ -71,7 +70,7 @@ func main() {
 		panic(err)
 	}
 
-	latResult, err := latency.NewLatencyMeter(latency.DefaultOptions()).ClientConn(proxyConn)
+	latResult, err := benchmate.NewLatencyMeter(benchmate.DefaultLatencyOptions()).ClientConn(proxyConn)
 	if err != nil {
 		log.Println(err)
 	}

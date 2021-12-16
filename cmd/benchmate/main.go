@@ -41,8 +41,7 @@ package main
 import (
 	"encoding/json"
 	"flag"
-	"github.com/kubermatic/benchmate/latency"
-	"github.com/kubermatic/benchmate/throughput"
+	"github.com/kubermatic/benchmate"
 	"io"
 	"io/ioutil"
 	"log"
@@ -57,9 +56,9 @@ func prettyJSON(x interface{}) string {
 	return string(b)
 }
 
-func runClients(tpOpt throughput.Options, latOpt latency.LatencyOptions) {
+func runClients(tpOpt benchmate.ThroughputOptions, latOpt benchmate.LatencyOptions) {
 	log.Println("running throughput client with:", prettyJSON(tpOpt))
-	tpResult, err := throughput.NewThroughputMeter(tpOpt).Client()
+	tpResult, err := benchmate.NewThroughputMeter(tpOpt).Client()
 	if err != nil {
 		log.Println("throughput measurement failed:", err)
 	} else {
@@ -69,7 +68,7 @@ func runClients(tpOpt throughput.Options, latOpt latency.LatencyOptions) {
 	}
 
 	log.Println("running latency client with:", prettyJSON(latOpt))
-	latResult, err := latency.NewLatencyMeter(latOpt).Client()
+	latResult, err := benchmate.NewLatencyMeter(latOpt).Client()
 	if err != nil {
 		log.Println("latency measurement failed:", err)
 	} else {
@@ -79,13 +78,13 @@ func runClients(tpOpt throughput.Options, latOpt latency.LatencyOptions) {
 	}
 }
 
-func runServers(tpOpt throughput.Options, latOpt latency.LatencyOptions) {
+func runServers(tpOpt benchmate.ThroughputOptions, latOpt benchmate.LatencyOptions) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		log.Println("running throughput server with:", prettyJSON(tpOpt))
-		err := throughput.NewThroughputMeter(tpOpt).Server()
+		err := benchmate.NewThroughputMeter(tpOpt).Server()
 		if err != nil {
 			if err == io.EOF {
 				log.Println("throughput server done.")
@@ -98,7 +97,7 @@ func runServers(tpOpt throughput.Options, latOpt latency.LatencyOptions) {
 	go func() {
 		defer wg.Done()
 		log.Println("running latency server with:", prettyJSON(latOpt))
-		err := latency.NewLatencyMeter(latOpt).Server()
+		err := benchmate.NewLatencyMeter(latOpt).Server()
 		if err != nil {
 			log.Println("latency server:", err)
 		} else {
@@ -121,7 +120,7 @@ func main() {
 	flag.StringVar(&nodeIP, "node-ip", "", "override the tcpaddr setting")
 	flag.Parse()
 
-	latOpt := latency.DefaultOptions()
+	latOpt := benchmate.DefaultLatencyOptions()
 	if latencyOpts != "" {
 		data, err := ioutil.ReadFile(latencyOpts)
 		if err != nil {
@@ -133,7 +132,7 @@ func main() {
 		}
 	}
 
-	tpOpt := throughput.DefaultOptions()
+	tpOpt := benchmate.DefaultThroughputOptions()
 	if throughputOpts != "" {
 		data, err := ioutil.ReadFile(throughputOpts)
 		if err != nil {

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package latency
+package benchmate
 
 import (
 	"fmt"
@@ -43,7 +43,7 @@ type LatencyOptions struct {
 //		ClientPort:  13504,
 //		Timeout:     120000,
 //  }
-func DefaultOptions() LatencyOptions {
+func DefaultLatencyOptions() LatencyOptions {
 	return LatencyOptions{
 		MsgSize:     128,
 		NumPings:    1000,
@@ -56,7 +56,7 @@ func DefaultOptions() LatencyOptions {
 }
 
 // Result holds the results of a latency benchmark.
-type Result struct {
+type LatencyResult struct {
 	ElapsedTime time.Duration `json:"elapsedTime"` // time elapsed in nanoseconds
 	NumPings    int           `json:"numPings"`    // number of pings sent
 	AvgLatency  time.Duration `json:"avgLatency"`  // in nanoseconds ( elapsedTime / numPings )
@@ -114,7 +114,7 @@ func (lm *LatencyMeter) Server() error {
 }
 
 // ClientConn like Client with a connection argument.
-func (lm *LatencyMeter) ClientConn(conn net.Conn) (*Result, error) {
+func (lm *LatencyMeter) ClientConn(conn net.Conn) (*LatencyResult, error) {
 	buf := make([]byte, lm.MsgSize)
 	t1 := time.Now()
 	stopTime := t1.Add(time.Duration(lm.Timeout) * time.Millisecond)
@@ -143,7 +143,7 @@ func (lm *LatencyMeter) ClientConn(conn net.Conn) (*Result, error) {
 	elapsed := time.Since(t1)
 	totalpings := pingsSent * 2
 
-	return &Result{
+	return &LatencyResult{
 		ElapsedTime: elapsed,
 		NumPings:    totalpings,
 		AvgLatency:  time.Duration(int(elapsed.Nanoseconds()) / totalpings),
@@ -152,7 +152,7 @@ func (lm *LatencyMeter) ClientConn(conn net.Conn) (*Result, error) {
 
 // Client sends a message of MsgSize bytes to the server and reads the reply from the server.
 // It calculates average latency over all the request/responses and returns the result.
-func (lm *LatencyMeter) Client() (*Result, error) {
+func (lm *LatencyMeter) Client() (*LatencyResult, error) {
 	dial, domain, address := lm.domainAndAddress()
 	conn, err := dial(domain, address)
 	if err != nil {

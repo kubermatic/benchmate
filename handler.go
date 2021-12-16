@@ -19,8 +19,6 @@ package benchmate
 
 import (
 	"encoding/json"
-	"github.com/kubermatic/benchmate/latency"
-	"github.com/kubermatic/benchmate/throughput"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -29,7 +27,7 @@ import (
 // ThroughputRequest provides options for throughput benchmarks.
 // Set Client to true if you want the handler to run a client.
 type ThroughputRequest struct {
-	*throughput.Options
+	*ThroughputOptions
 	Client bool `json:"client"`
 }
 
@@ -50,7 +48,7 @@ func Throughput(w http.ResponseWriter, r *http.Request) {
 
 	if req.Client {
 		log.Println("running throughput client")
-		resp, err := throughput.NewThroughputMeter(*req.Options).Client()
+		resp, err := NewThroughputMeter(*req.ThroughputOptions).Client()
 		if err != nil {
 			log.Println(err)
 		}
@@ -63,7 +61,7 @@ func Throughput(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			panic(err)
 		}
-		err = throughput.NewThroughputMeter(*req.Options).Server()
+		err = NewThroughputMeter(*req.ThroughputOptions).Server()
 		if err != nil {
 			log.Println(err)
 		}
@@ -73,7 +71,7 @@ func Throughput(w http.ResponseWriter, r *http.Request) {
 // LatencyRequest provides options for latency benchmarks.
 // Set Client to true if you want the handler to run a client.
 type LatencyRequest struct {
-	*latency.LatencyOptions
+	*LatencyOptions
 	Client bool `json:"client"`
 }
 
@@ -96,7 +94,7 @@ func Latency(w http.ResponseWriter, r *http.Request) {
 
 	if req.Client {
 		log.Println("running latency client")
-		result, err := latency.NewLatencyMeter(*req.LatencyOptions).Client()
+		result, err := NewLatencyMeter(*req.LatencyOptions).Client()
 		if err != nil {
 			log.Println(err)
 		}
@@ -108,7 +106,7 @@ func Latency(w http.ResponseWriter, r *http.Request) {
 	} else {
 		log.Println("running latency server")
 
-		err = latency.NewLatencyMeter(*req.LatencyOptions).Server()
+		err = NewLatencyMeter(*req.LatencyOptions).Server()
 		if err != nil {
 			log.Println(err)
 		}
