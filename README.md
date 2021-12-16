@@ -37,6 +37,11 @@ HTTP handlers like [pprof](https://pkg.go.dev/net/http/pprof).
 You can then trigger handler on one service to run the
 server and on the other service to run the client.
 
+**Demo on localhost:**
+
+![./hack/bmserver-localhost.gif](./hack/bmserver-localhost.gif)
+
+Commands for you to try. There are more in [curls.txt](./hack/curls.txt).
 ```
 $ curl http://localhost:8888/benchmate/latency --data '
 {
