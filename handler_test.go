@@ -44,11 +44,16 @@ func TestEndpoints(t *testing.T) {
 	tpOpt := DefaultThroughputOptions()
 	latOpt := DefaultLatencyOptions()
 
+	// adjust for test
+
 	tpOpt.ClientPort = randPort()
+	tpOpt.MsgSize >>= 5
 	tpOpt.TcpAddress = fmt.Sprintf(":%d", randPort())
+	tpOpt.NumMsg = 100
+
 	latOpt.ClientPort = randPort()
 	latOpt.TcpAddress = fmt.Sprintf(":%d", randPort())
-	latOpt.NumPings = 100000
+	latOpt.NumPings = 100
 
 	tests := []struct {
 		name      string
@@ -80,9 +85,9 @@ func TestEndpoints(t *testing.T) {
 					t.Error(err)
 				}
 
-				// if result.NumPings != latOpt.NumPings*2 {
-				//	 t.Errorf("%s: expected %d pings, got %d", t.Name(), latOpt.NumPings*2, result.NumPings)
-				// }
+				if result.NumPings != latOpt.NumPings*2 {
+					t.Errorf("%s: expected %d pings, got %d", t.Name(), latOpt.NumPings*2, result.NumPings)
+				}
 
 				if result.AvgLatency == 0 {
 					t.Errorf("%s: %v", t.Name(), "latency is 0")
@@ -116,9 +121,9 @@ func TestEndpoints(t *testing.T) {
 					t.Error(err)
 				}
 
-				// if result.NumMsg != 100000 {
-				//	 t.Errorf("%s: %v", t.Name(), "numMsg is not 100000")
-				// }
+				if result.NumMsg != tpOpt.NumMsg {
+					t.Errorf("%s: expected %d messages, got %d", t.Name(), tpOpt.NumMsg, result.NumMsg)
+				}
 
 				if result.ThroughputMBPerSec == 0 {
 					t.Errorf("%s: %v", t.Name(), "throughput is 0")
@@ -132,7 +137,7 @@ func TestEndpoints(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			go test.runServer()
-			time.Sleep(time.Second)
+			time.Sleep(time.Second) // give server time to start
 			test.runClient()
 		})
 	}

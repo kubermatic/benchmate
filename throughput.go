@@ -46,7 +46,7 @@ type ThroughputOptions struct {
 //	}
 func DefaultThroughputOptions() ThroughputOptions {
 	return ThroughputOptions{
-		MsgSize:     512 * 1024,
+		MsgSize:     256 * 1024,
 		NumMsg:      100000,
 		TcpAddress:  ":13500",
 		UnixAddress: "/tmp/tp_benchmark.sock",
