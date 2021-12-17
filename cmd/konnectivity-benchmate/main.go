@@ -22,15 +22,13 @@ import (
 	"fmt"
 	"github.com/kubermatic/benchmate"
 	"google.golang.org/grpc"
-	"log"
 	"net"
 	"sigs.k8s.io/apiserver-network-proxy/konnectivity-client/pkg/client"
 )
 
 func main() {
-
 	var proxyUDSName string
-	flag.StringVar(&proxyUDSName, "proxy-uds", "/etc/kubernetes/konnectivity-server/konnectivity-server.socket", "konnectivity-benchmate socket name of konnectivity proxy")
+	flag.StringVar(&proxyUDSName, "proxy-uds", "/etc/kubernetes/konnectivity-server/konnectivity-server.socket", "uds socket of konnectivity-proxy")
 
 	var nodeIP string
 	flag.StringVar(&nodeIP, "node-ip", "127.0.0.1", "ip of node where benchmate server is running")
@@ -57,9 +55,9 @@ func main() {
 		panic(err)
 	}
 
-	tpResult, err := benchmate.NewThroughputMeter(benchmate.DefaultThroughputOptions()).ClientConn(proxyConn)
+	tpResult, err := benchmate.DefaultThroughputOptions().ThroughputClient().Run(proxyConn)
 	if err != nil {
-		log.Println(err)
+		panic(err)
 	}
 
 	fmt.Println(tpResult)
@@ -70,11 +68,10 @@ func main() {
 		panic(err)
 	}
 
-	latResult, err := benchmate.NewLatencyMeter(benchmate.DefaultLatencyOptions()).ClientConn(proxyConn)
+	latResult, err := benchmate.DefaultLatencyOptions().LatencyClient().Run(proxyConn)
 	if err != nil {
-		log.Println(err)
+		panic(err)
 	}
 
 	fmt.Println(latResult)
-
 }

@@ -1,19 +1,19 @@
-/*
-Copyright 2021 The Kubermatic Kubernetes Platform contributors.
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
-
+///*
+//Copyright 2021 The Kubermatic Kubernetes Platform contributors.
+//
+//Licensed under the Apache License, Version 2.0 (the "License");
+//you may not use this file except in compliance with the License.
+//You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+//Unless required by applicable law or agreed to in writing, software
+//distributed under the License is distributed on an "AS IS" BASIS,
+//WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//See the License for the specific language governing permissions and
+//limitations under the License.
+//*/
+//
 package benchmate
 
 import (
@@ -28,7 +28,7 @@ import (
 	"time"
 )
 
-func TestEndpoints(t *testing.T) {
+func TestHandlers(t *testing.T) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/benchmate/latency", LatencyHandler)
 	mux.HandleFunc("/benchmate/throughput", ThroughputHandler)
@@ -48,12 +48,12 @@ func TestEndpoints(t *testing.T) {
 
 	tpOpt.ClientPort = randPort()
 	tpOpt.MsgSize >>= 5
-	tpOpt.TcpAddress = fmt.Sprintf(":%d", randPort())
+	tpOpt.Addr = fmt.Sprintf(":%d", randPort())
 	tpOpt.NumMsg = 100
 
 	latOpt.ClientPort = randPort()
-	latOpt.TcpAddress = fmt.Sprintf(":%d", randPort())
-	latOpt.NumPings = 100
+	latOpt.Addr = fmt.Sprintf(":%d", randPort())
+	latOpt.NumMsg = 100
 
 	tests := []struct {
 		name      string
@@ -64,7 +64,7 @@ func TestEndpoints(t *testing.T) {
 			name: "latency",
 			runServer: func() {
 				_, err := doReq(s.URL+"/benchmate/latency", &LatencyRequest{
-					LatencyOptions: latOpt,
+					Options: latOpt,
 				})
 				if err != nil {
 					t.Errorf("%s: %v", t.Name(), err)
@@ -72,8 +72,8 @@ func TestEndpoints(t *testing.T) {
 			},
 			runClient: func() {
 				data, err := doReq(s.URL+"/benchmate/latency", &LatencyRequest{
-					LatencyOptions: latOpt,
-					Client:         true,
+					Options: latOpt,
+					Client:  true,
 				})
 				if err != nil {
 					t.Error(err)
@@ -85,8 +85,8 @@ func TestEndpoints(t *testing.T) {
 					t.Error(err)
 				}
 
-				if result.NumPings != latOpt.NumPings*2 {
-					t.Errorf("%s: expected %d pings, got %d", t.Name(), latOpt.NumPings*2, result.NumPings)
+				if result.NumMsg != latOpt.NumMsg*2 {
+					t.Errorf("%s: expected %d pings, got %d", t.Name(), latOpt.NumMsg*2, result.NumMsg)
 				}
 
 				if result.AvgLatency == 0 {
@@ -100,7 +100,7 @@ func TestEndpoints(t *testing.T) {
 			name: "throughput",
 			runServer: func() {
 				_, err := doReq(s.URL+"/benchmate/throughput", &ThroughputRequest{
-					ThroughputOptions: tpOpt,
+					Options: tpOpt,
 				})
 				if err != nil {
 					t.Errorf("%s: %v", t.Name(), err)
@@ -108,8 +108,8 @@ func TestEndpoints(t *testing.T) {
 			},
 			runClient: func() {
 				data, err := doReq(s.URL+"/benchmate/throughput", &ThroughputRequest{
-					ThroughputOptions: tpOpt,
-					Client:            true,
+					Options: tpOpt,
+					Client:  true,
 				})
 				if err != nil {
 					t.Error(err)
@@ -125,7 +125,7 @@ func TestEndpoints(t *testing.T) {
 					t.Errorf("%s: expected %d messages, got %d", t.Name(), tpOpt.NumMsg, result.NumMsg)
 				}
 
-				if result.ThroughputMBPerSec == 0 {
+				if result.AvgThroughput == 0 {
 					t.Errorf("%s: %v", t.Name(), "throughput is 0")
 				}
 
@@ -144,7 +144,7 @@ func TestEndpoints(t *testing.T) {
 }
 
 func randPort() int {
-	return 1234 + rand.Intn(1<<10)
+	return 1234 + rand.Intn(1234)
 }
 
 func prettyJSON(x interface{}) string {

@@ -19,90 +19,47 @@ package benchmate
 import (
 	"fmt"
 	"net"
-	"os"
 	"time"
 )
 
-// ThroughputOptions holds the options for a throughput benchmark.
-type ThroughputOptions struct {
-	MsgSize     int    `json:"msgSize"`     // size of messages in bytes
-	NumMsg      int    `json:"numMsg"`      // number of messages to exchange before timeout
-	TcpAddress  string `json:"tcpAddress"`  // server listens on this address
-	UnixAddress string `json:"unixAddress"` // server listens on this address when UnixDomain is true
-	UnixDomain  bool   `json:"unixDomain"`  // set to true when using unix domain sockets
-	ClientPort  int    `json:"clientPort"`  // local port used by client
-	Timeout     int    `json:"timeout"`     // in milliseconds
+type ThroughputClient struct {
+	msgSize int
+	numMsg  int
+	timeout int
 }
 
-// DefaultOptions the default values of the options.
-//	{
-//		MsgSize:     512 * 1024,
-//		NumMsg:      100000,
-//		TcpAddress:  ":13500",
-//		UnixAddress: "/tmp/tp_benchmark.sock",
-//		UnixDomain:  false,
-//		ClientPort:  13503,
-//		Timeout:     120000,
-//	}
-func DefaultThroughputOptions() ThroughputOptions {
-	return ThroughputOptions{
-		MsgSize:     256 * 1024,
-		NumMsg:      100000,
-		TcpAddress:  ":13500",
-		UnixAddress: "/tmp/tp_benchmark.sock",
-		UnixDomain:  false,
-		ClientPort:  13503,
-		Timeout:     120000,
-	}
+type ThroughputServer struct {
+	msgSize int
 }
 
-// Result holds the results of a throughput benchmark.
 type ThroughputResult struct {
-	MsgSize             int           `json:"msgSize"`             // size of the messages in bytes
-	NumMsg              int           `json:"numMsg"`              // number of messages exchanged
-	TotalData           int           `json:"totalData"`           // total bytes exchanged
-	Elapsed             time.Duration `json:"elapsed"`             // total time elapsed
-	ThroughputMBPerSec  float64       `json:"throughputMBPerSec"`  // throughput in MB/s
-	ThroughputMsgPerSec float64       `json:"throughputMsgPerSec"` // throughput in msg/s
+	MsgSize       int           `json:"msgSize"`       // size of the messages in bytes
+	NumMsg        int           `json:"numMsg"`        // number of messages sent
+	Elapsed       time.Duration `json:"elapsed"`       // total time
+	AvgThroughput float64       `json:"avgThroughput"` // avg throughput in MB/s
 }
 
-// ThroughputMeter allows you to run clients and servers to measure throughput
-// of the network between them.
-type ThroughputMeter struct {
-	ThroughputOptions
-}
-
-// NewThroughputMeter returns a new ThroughputMeter instance.
-func NewThroughputMeter(options ThroughputOptions) *ThroughputMeter {
-	return &ThroughputMeter{
-		ThroughputOptions: options,
+func NewThroughputServer(msgSize int) ThroughputServer {
+	return ThroughputServer{
+		msgSize: msgSize,
 	}
 }
 
-// Server starts a throughput benchmark server.
-// Once a client connects and starts sending data, the server reads as much data as it can.
-// It returns when the client closes the connection.
-func (tm *ThroughputMeter) Server() error {
-	if tm.UnixDomain {
-		if err := os.RemoveAll(tm.UnixAddress); err != nil {
-			panic(err)
-		}
+func NewThroughputClient(msgSize, numMsg, timeout int) ThroughputClient {
+	return ThroughputClient{
+		msgSize: msgSize,
+		timeout: timeout,
+		numMsg:  numMsg,
 	}
+}
 
-	_, domain, address := tm.domainAddress()
-	l, err := net.Listen(domain, address)
-	if err != nil {
-		return err
-	}
-	defer l.Close()
-
+func (s ThroughputServer) Run(l net.Listener) error {
 	conn, err := l.Accept()
 	if err != nil {
 		return err
 	}
 	defer conn.Close()
-
-	buf := make([]byte, tm.MsgSize)
+	buf := make([]byte, s.msgSize)
 	for {
 		nread, err := conn.Read(buf)
 		if err != nil {
@@ -116,19 +73,18 @@ func (tm *ThroughputMeter) Server() error {
 	return nil
 }
 
-// ClientConn like Client with a connection argument.
-func (tm *ThroughputMeter) ClientConn(conn net.Conn) (*ThroughputResult, error) {
-	buf := make([]byte, tm.MsgSize)
+func (c ThroughputClient) Run(conn net.Conn) (*ThroughputResult, error) {
+	buf := make([]byte, c.msgSize)
 	t1 := time.Now()
-	stopTime := t1.Add(time.Duration(tm.Timeout) * time.Millisecond)
+	stopTime := t1.Add(time.Duration(c.timeout) * time.Millisecond)
 	msgSent := 0
 
-	for n := 0; n < tm.NumMsg; n++ {
+	for n := 0; n < c.numMsg; n++ {
 		nwrite, err := conn.Write(buf)
 		if err != nil {
 			return nil, err
 		}
-		if nwrite != tm.MsgSize {
+		if nwrite != c.msgSize {
 			return nil, fmt.Errorf("bad nwrite = %d", nwrite)
 		}
 
@@ -139,39 +95,11 @@ func (tm *ThroughputMeter) ClientConn(conn net.Conn) (*ThroughputResult, error) 
 	}
 
 	elapsed := time.Since(t1)
-	totaldata := int64(msgSent * tm.MsgSize)
 
 	return &ThroughputResult{
-		MsgSize:             tm.MsgSize,
-		NumMsg:              msgSent,
-		TotalData:           int(totaldata),
-		Elapsed:             elapsed,
-		ThroughputMBPerSec:  float64((totaldata * 1000) / elapsed.Nanoseconds()),
-		ThroughputMsgPerSec: float64((int64(msgSent) * 1000000000) / elapsed.Nanoseconds()),
+		MsgSize:       c.msgSize,
+		NumMsg:        msgSent,
+		Elapsed:       elapsed,
+		AvgThroughput: float64(msgSent*c.msgSize*1000) / float64(elapsed.Nanoseconds()),
 	}, nil
-}
-
-// Client tries to send NumMsg messages of size MsgSize to the server within Timeout.
-// It returns the results containing throughput information.
-func (tm *ThroughputMeter) Client() (*ThroughputResult, error) {
-	dial, domain, address := tm.domainAddress()
-	conn, err := dial(domain, address)
-	if err != nil {
-		return nil, err
-	}
-	defer conn.Close()
-	return tm.ClientConn(conn)
-}
-
-func (tm *ThroughputMeter) domainAddress() (func(string, string) (net.Conn, error), string, string) {
-	if tm.UnixDomain {
-		return net.Dial, "unix", tm.UnixAddress
-	} else {
-		dialer := &net.Dialer{
-			LocalAddr: &net.TCPAddr{
-				Port: tm.ClientPort,
-			},
-		}
-		return dialer.Dial, "tcp", tm.TcpAddress
-	}
 }

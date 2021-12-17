@@ -45,7 +45,9 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"net"
 	"sync"
+	"time"
 )
 
 func prettyJSON(x interface{}) string {
@@ -56,35 +58,55 @@ func prettyJSON(x interface{}) string {
 	return string(b)
 }
 
-func runClients(tpOpt benchmate.ThroughputOptions, latOpt benchmate.LatencyOptions) {
+func runClients(tpOpt, latOpt benchmate.Options) {
 	log.Println("running throughput client with:", prettyJSON(tpOpt))
-	tpResult, err := benchmate.NewThroughputMeter(tpOpt).Client()
+	conn, err := net.Dial(tpOpt.Network, tpOpt.Addr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer func() {
+		err = conn.Close()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+	tpResult, err := tpOpt.ThroughputClient().Run(conn)
 	if err != nil {
 		log.Println("throughput measurement failed:", err)
 	} else {
 		log.Println("throughput benchmark result:", prettyJSON(tpResult))
-		log.Println("throughput: ", tpResult.ThroughputMBPerSec, "MB/s")
+		log.Println("throughput: ", float64(tpResult.NumMsg*tpResult.MsgSize*1000)/float64(tpResult.Elapsed.Nanoseconds()), "MB/s")
 		log.Println("throughput client done.")
 	}
 
 	log.Println("running latency client with:", prettyJSON(latOpt))
-	latResult, err := benchmate.NewLatencyMeter(latOpt).Client()
+	conn, err = net.Dial(latOpt.Network, latOpt.Addr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	latResult, err := latOpt.LatencyClient().Run(conn)
 	if err != nil {
 		log.Println("latency measurement failed:", err)
 	} else {
 		log.Println("latency benchmark result:", prettyJSON(latResult))
-		log.Println("average latency:", latResult.AvgLatency)
+		log.Println("average latency:", time.Duration(float64(latResult.ElapsedTime.Nanoseconds())/float64(latResult.NumMsg)))
 		log.Println("latency client done.")
 	}
 }
 
-func runServers(tpOpt benchmate.ThroughputOptions, latOpt benchmate.LatencyOptions) {
+func runServers(tpOpt, latOpt benchmate.Options) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 	go func() {
 		defer wg.Done()
 		log.Println("running throughput server with:", prettyJSON(tpOpt))
-		err := benchmate.NewThroughputMeter(tpOpt).Server()
+		l, err := net.Listen(tpOpt.Network, tpOpt.Addr)
+		if err != nil {
+			log.Println("throughput server failed:", err)
+			return
+		}
+		defer l.Close()
+		err = tpOpt.ThroughputServer().Run(l)
 		if err != nil {
 			if err == io.EOF {
 				log.Println("throughput server done.")
@@ -97,7 +119,12 @@ func runServers(tpOpt benchmate.ThroughputOptions, latOpt benchmate.LatencyOptio
 	go func() {
 		defer wg.Done()
 		log.Println("running latency server with:", prettyJSON(latOpt))
-		err := benchmate.NewLatencyMeter(latOpt).Server()
+		l, err := net.Listen(latOpt.Network, latOpt.Addr)
+		if err != nil {
+			log.Println("latency server failed:", err)
+			return
+		}
+		err = latOpt.LatencyServer().Run(l)
 		if err != nil {
 			log.Println("latency server:", err)
 		} else {
@@ -145,8 +172,8 @@ func main() {
 	}
 
 	if nodeIP != "" {
-		tpOpt.TcpAddress = nodeIP + ":13500"
-		latOpt.TcpAddress = nodeIP + ":13501"
+		tpOpt.Addr = nodeIP + ":13500"
+		latOpt.Addr = nodeIP + ":13501"
 	}
 
 	if c {

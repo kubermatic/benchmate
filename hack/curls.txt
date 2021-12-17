@@ -2,8 +2,9 @@
 curl http://localhost:8888/benchmate/latency --data '
 {
     "msgSize": 128,
-    "numPings": 1000,
-    "tcpAddress": ":13501",
+    "numMsg": 1000,
+    "network": "tcp",
+    "addr": ":13501",
     "timeout": 120000
 }
 '
@@ -11,51 +12,30 @@ curl http://localhost:8888/benchmate/latency --data '
 curl http://localhost:9999/benchmate/latency --data '
 {
     "msgSize": 128,
-    "numPings": 1000,
-    "tcpAddress": ":13501",
-    "timeout": 120000,
-    "client": true
+    "numMsg": 1000,
+    "network": "tcp",
+    "addr": ":13501",
+    "timeout": 120000
 }
 '
 
 curl http://localhost:8888/benchmate/throughput --data '
 {
-    "msgSize": 262144,
-    "numMsg": 100000,
-    "unixAddress": "/tmp/tp_benchmark.sock",
-    "unixDomain": true,
+    "msgSize": 128000,
+    "numMsg": 10000,
+    "network": "tcp",
+    "addr": ":13501",
     "timeout": 120000
 }
 '
 
 curl http://localhost:9999/benchmate/throughput --data '
 {
-    "msgSize": 262144,
-    "numMsg": 100000,
-    "unixAddress": "/tmp/tp_benchmark.sock",
-    "unixDomain": true,
+    "msgSize": 128000,
+    "numMsg": 10000,
+    "network": "tcp",
+    "addr": ":13501",
     "timeout": 120000,
     "client": true
 }
 '
-
-
-curl http://localhost:8888/benchmate/throughput --data '
-{
-    "msgSize": 262144,
-    "numMsg": 100000,
-    "tcpAddress": ":13500",
-    "timeout": 120000
-}
-'
-
-curl http://localhost:9999/benchmate/throughput --data '
-{
-    "msgSize": 262144,
-    "numMsg": 100000,
-    "tcpAddress": ":13500",
-    "timeout": 120000,
-    "Client": true
-}
-'
-

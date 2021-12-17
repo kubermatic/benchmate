@@ -14,20 +14,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// This package provides pporf like handlers for network performance analysis.
+// Package benchmate provides pporf like handlers for network performance analysis.
 package benchmate
 
 import (
 	"encoding/json"
 	"io/ioutil"
 	"log"
+	"net"
 	"net/http"
 )
 
 // ThroughputRequest provides options for throughput benchmarks.
 // Set Client to true if you want the handler to run a client.
 type ThroughputRequest struct {
-	ThroughputOptions
+	Options
 	Client bool `json:"client"`
 }
 
@@ -48,22 +49,45 @@ func ThroughputHandler(w http.ResponseWriter, r *http.Request) {
 
 	if req.Client {
 		log.Println("running throughput client")
-		resp, err := NewThroughputMeter(req.ThroughputOptions).Client()
+		conn, err := net.Dial(req.Network, req.Addr)
 		if err != nil {
 			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		defer conn.Close()
+		resp, err := NewThroughputClient(req.MsgSize, req.NumMsg, req.Timeout).Run(conn)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 		err = json.NewEncoder(w).Encode(resp)
 		if err != nil {
 			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 	} else {
 		log.Println("running throughput server")
 		if err != nil {
-			panic(err)
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
-		err = NewThroughputMeter(req.ThroughputOptions).Server()
+		l, err := net.Listen(req.Network, req.Addr)
 		if err != nil {
 			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		defer l.Close()
+
+		err = NewThroughputServer(req.MsgSize).Run(l)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 	}
 }
@@ -71,7 +95,7 @@ func ThroughputHandler(w http.ResponseWriter, r *http.Request) {
 // LatencyRequest provides options for latency benchmarks.
 // Set Client to true if you want the handler to run a client.
 type LatencyRequest struct {
-	LatencyOptions
+	Options
 	Client bool `json:"client"`
 }
 
@@ -93,22 +117,47 @@ func LatencyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if req.Client {
-		log.Println("running latency client")
-		result, err := NewLatencyMeter(req.LatencyOptions).Client()
+
+		conn, err := net.Dial(req.Network, req.Addr)
 		if err != nil {
 			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		defer conn.Close()
+
+		log.Println("running latency client")
+
+		result, err := NewLatencyClient(req.MsgSize, req.NumMsg, req.Timeout).Run(conn)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 
 		err = json.NewEncoder(w).Encode(result)
 		if err != nil {
 			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
-	} else {
-		log.Println("running latency server")
 
-		err = NewLatencyMeter(req.LatencyOptions).Server()
+	} else {
+
+		l, err := net.Listen(req.Network, req.Addr)
 		if err != nil {
 			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+		defer l.Close()
+
+		log.Println("running latency server")
+		err = NewLatencyServer(req.MsgSize, req.NumMsg).Run(l)
+		if err != nil {
+			log.Println(err)
+			w.WriteHeader(http.StatusInternalServerError)
+			return
 		}
 	}
 }
