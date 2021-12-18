@@ -19,7 +19,7 @@ for the benchmark using json files via `--latOpt=<filename>` for latency options
 
 **Run it on localhost:**
 
-![./hacks/benchmate-localhost.gif](./hack/benchmate-localhost.gif) 
+![./hacks/localhost-benchmate.gif](./hack/localhost-benchmate.gif) 
 
 **Run on two nodes in a cluster using docker:**
 
