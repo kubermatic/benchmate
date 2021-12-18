@@ -26,22 +26,6 @@ type Options struct {
 	Timeout    int    `json:"timeout"`    // in milliseconds
 }
 
-//// Listener returns a listener depending on the network.
-//func (o Options) Listener() (net.Listener, error) {
-//	if o.UnixDomain {
-//		return net.Listen("unix", o.Addr)
-//	}
-//	return net.Listen("tcp", o.Addr)
-//}
-//
-//// Conn returns a connection depending on the network.
-//func (o Options) Conn() (net.Conn, error) {
-//	if o.UnixDomain {
-//		return net.Dial("unix", o.Addr)
-//	}
-//	return net.Dial("tcp", o.Addr)
-//}
-
 // LatencyServer returns a LatencyServer configured with the options.
 func (o Options) LatencyServer() LatencyServer {
 	return LatencyServer{

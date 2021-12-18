@@ -14,4 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Package benchmate providers functions to construct and run client/server
+// for network benchmarking.
 package benchmate
