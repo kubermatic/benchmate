@@ -3,13 +3,13 @@
 ## Overview
 This repository contains 
 1. Network latency, throughput estimation tools
-   - **benchmate**: iperf3, qperf like tool to estiamte network throughput, latency.
-   - **konnectivity-benchmate**: A client to measure throughput, latency of a [Konnectivity](https://kubernetes.io/docs/tasks/extend-kubernetes/setup-konnectivity/) setup.
+   - `benchmate`: iperf3, qperf like tool to estiamte network throughput, latency.
+   - `konnectivity-benchmate`: A client to measure throughput, latency of a [Konnectivity](https://kubernetes.io/docs/tasks/extend-kubernetes/setup-konnectivity/) setup.
 2. Package that simplify construction of such tools. Read [documentation](https://pkg.go.dev/github.com/kubermatic/benchmate/). 
 3. HTTP handlers to quickly add network performance estimation to your services. See [example](https://github.com/kubermatic/benchmate/blob/master/cmd/bmserver/main.go).
 
 
-### cmd/benchmate
+#### Benchmate
 `benchmate` measures latency and throughput between two nodes. You can run it on one node in the server mode and on
 another node in the client mode. If the the client and server can talk to each other, you should get the network
 performance stats at the client. This tool supports both TCP and Unix Domain sockets. Quickest way to try this out is using the docker image. 
@@ -19,11 +19,11 @@ performance stats at the client. This tool supports both TCP and Unix Domain soc
 ![./hacks/localhost-benchmate.gif](./hack/localhost-benchmate.gif) 
 
 
-### cmd/konnectivity-benchmate
+#### Konnectivity-benchmate
 Client for benchmarking [Konnectivity](https://kubernetes.io/docs/tasks/extend-kubernetes/setup-konnectivity/). You can
 run benchmark server on one node and point `konnectivity-benchmate` to the UDS of konnectivity proxy server.
 
-### cmd/bmserver
+#### Bmserver
 This program demonstrates how you can easily add network performance estimation to your application. For example, if two
 microservices are communicating over a network, you can measure the latency and throughput of the network. You register
 HTTP handlers like [pprof](https://pkg.go.dev/net/http/pprof). 
