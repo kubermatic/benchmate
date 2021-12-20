@@ -14,7 +14,7 @@ This repository contains
 another node in the client mode. If the the client and server can talk to each other, you should get the network
 performance stats at the client. This tool supports both TCP and Unix Domain sockets. Quickest way to try this out is using the docker image. 
 
-**Demo**
+Demo:
 
 ![./hacks/localhost-benchmate.gif](./hack/localhost-benchmate.gif) 
 
@@ -37,7 +37,7 @@ HTTP handlers like [pprof](https://pkg.go.dev/net/http/pprof).
 You can then trigger handler on one service to run the
 server and on the other service to run the client.
 
-**Demo**
+Demo:
 
 ![./hack/bmserver-localhost.gif](./hack/bmserver-localhost.gif)
 
