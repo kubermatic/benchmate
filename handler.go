@@ -24,8 +24,9 @@ import (
 	"net/http"
 )
 
-// ThroughputRequest provides options for throughput benchmarks.
-// Set Client to true if you want the handler to run a client.
+// ThroughputRequest is request body for the ThroughputHandler.
+// Set Client to true for running the throuhgput client. It runs
+// server by default.
 type ThroughputRequest struct {
 	Options
 	Client bool `json:"client"`
@@ -115,8 +116,9 @@ func ThroughputHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-// LatencyRequest provides options for latency benchmarks.
-// Set Client to true if you want the handler to run a client.
+// LatencyRequest is request body for the LatencyRequest.
+// Set Client to true for running the throuhgput client. It runs
+// server by default.
 type LatencyRequest struct {
 	Options
 	Client bool `json:"client"`

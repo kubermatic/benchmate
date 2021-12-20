@@ -22,27 +22,21 @@ import (
 	"time"
 )
 
-//// LatencyOptions holds the options for the latency benchmarks.
-//type LatencyOptions struct {
-//	MsgSize    int    `json:"msgSize"`    // size of messages in bytes
-//	Addr       string `json:"tcpAddress"` // server listens on this address
-//	UnixDomain bool   `json:"unixDomain"` // set to true when using unix domain sockets
-//	ClientPort int    `json:"clientPort"` // local port used by client
-//	Timeout    int    `json:"timeout"`    // in milliseconds
-//}
-
-// Result holds the results of a latency benchmark.
+// LatencyResult contains the details of a latency estimation run.
+// AvgLatency = NumMsg / ElapsedTime.
 type LatencyResult struct {
 	ElapsedTime time.Duration `json:"elapsedTime"` // time elapsed in nanoseconds
 	NumMsg      int           `json:"numPings"`    // number of pings sent
 	AvgLatency  time.Duration `json:"avgLatency"`  // average latency in nanoseconds
 }
 
+// LatencyServer holds parameters for the server side of latency estimation.
 type LatencyServer struct {
 	msgSize int
 	numMsg  int
 }
 
+// NewLatencyServer creates a new instance of LatencyServer.
 func NewLatencyServer(msgSize, numMsg int) LatencyServer {
 	return LatencyServer{
 		msgSize: msgSize,
@@ -50,20 +44,19 @@ func NewLatencyServer(msgSize, numMsg int) LatencyServer {
 	}
 }
 
-func NewLatencyClient(msgSize, numMsg, timeout int) LatencyClient {
-	return LatencyClient{
-		msgSize: msgSize,
-		timeout: timeout,
-		numMsg:  numMsg,
-	}
-}
-
-type LatencyClient struct {
-	msgSize int
-	numMsg  int
-	timeout int
-}
-
+// Run waits to get connection from a client. It then reads the message sent
+// by the client and replies back with the same message. This allows client to
+// estimate the latency.
+//
+// It accepts a listener. The following code will run the server at port 8888.
+//
+//	l, _ := net.Listen("tcp", ":8888")
+//	s.Run(l)
+//
+//This will run the server at unix domain socket.
+//
+//	l, _ := net.Listen("unix", "/tmp/tp-srv")
+//	s.Run(l)
 func (o LatencyServer) Run(l net.Listener) error {
 	conn, err := l.Accept()
 	if err != nil {
@@ -92,6 +85,27 @@ func (o LatencyServer) Run(l net.Listener) error {
 	return nil
 }
 
+// LatencyClient holds parameters for the client side of latency estimation.
+type LatencyClient struct {
+	msgSize int
+	numMsg  int
+	timeout int
+}
+
+// NewLatencyClient returns an instance of LatencyClient. You can
+// call its Run method to start client for latency estimation.
+func NewLatencyClient(msgSize, numMsg, timeout int) LatencyClient {
+	return LatencyClient{
+		msgSize: msgSize,
+		timeout: timeout,
+		numMsg:  numMsg,
+	}
+}
+
+// Run sends the messages over the connection and
+// reads the reply back from the server. After the configured number
+// of messages are exchanged or the timeout is reached, it estimates the
+// latency by total time spent / ( 2 * # messages sent).
 func (lm LatencyClient) Run(conn net.Conn) (*LatencyResult, error) {
 	buf := make([]byte, lm.msgSize)
 	t1 := time.Now()
