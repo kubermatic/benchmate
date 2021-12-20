@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func TestName(t *testing.T) {
+func TestThroughput(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 
 	o := DefaultThroughputOptions()

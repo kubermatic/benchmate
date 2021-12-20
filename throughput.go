@@ -99,15 +99,11 @@ func (s ThroughputServer) Run(l net.Listener) error {
 	}
 	defer conn.Close()
 	buf := make([]byte, s.msgSize)
-	k := 0
 	for {
 		nread, err := conn.Read(buf)
 		if err != nil {
 			return err
 		}
-
-		fmt.Println("got", k, nread, s.msgSize)
-		k++
 
 		if nread == 0 {
 			break

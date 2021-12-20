@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-func TestName1(t *testing.T) {
+func TestLatency(t *testing.T) {
 	rand.Seed(time.Now().UnixNano())
 
 	o := DefaultLatencyOptions()
