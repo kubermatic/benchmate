@@ -75,7 +75,8 @@ curl http://localhost:9999/benchmate/latency --data '
     "numMsg": 1000,
     "network": "tcp",
     "addr": ":13501",
-    "timeout": 120000
+    "timeout": 120000,
+    "client": true
 }
 '
 ```
