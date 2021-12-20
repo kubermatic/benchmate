@@ -17,7 +17,7 @@ limitations under the License.
 // Package benchmate simplifies the construction of clients and servers
 // for network throughput/latency estimation. This lets you easily construct your
 // own tools instead of having to wrap existing tools and parse their command
-// line output.
+// line output. For example tools see https://github.com/kubermatic/benchmate/tree/master/cmd.
 //
 // The package also contains HTTP handlers
 // (ThroughputHandler, LatencyHandler) that can be added to your programs

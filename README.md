@@ -7,7 +7,7 @@ handlers to quickly add network benchmarking functionality to your services.
 ## Tools
 
 There are three tools:
-- [benchmate](#cmdbenchmate) -- a tool to run network benchmarks
+- [benchmate](#cmdbenchmate) -- a tool to run network benchmarks. 
 - [konnectivity-benchmate](#cmdkonnectivity-benchmate)-- client for benchmarking Konnectivity using benchmate. 
 - [bmserver](#cmdbmserver) -- a toy. 
 
