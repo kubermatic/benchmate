@@ -18,6 +18,10 @@ Demo:
 
 ![./hacks/localhost-benchmate.gif](./hack/localhost-benchmate.gif) 
 
+Commands from the demo: 
+``` 
+```
+
 
 #### Konnectivity-benchmate
 Client for benchmarking [Konnectivity](https://kubernetes.io/docs/tasks/extend-kubernetes/setup-konnectivity/). You can
@@ -41,7 +45,8 @@ Demo:
 
 ![./hack/bmserver-localhost.gif](./hack/bmserver-localhost.gif)
 
-Commands for you to try. There are more in [curls.txt](./hack/curls.txt).
+Commands from the demo:
+
 ```
 # run the latency server 
 curl http://localhost:8888/benchmate/latency --data '
