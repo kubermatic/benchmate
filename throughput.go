@@ -22,55 +22,30 @@ import (
 	"time"
 )
 
+// ThroughputResult contains the details of a throughput estimation run.
+// AvgThroughput = MsgSize * NumMsg / Elapsed in MB/s.
+type ThroughputResult struct {
+	MsgSize       int           `json:"msgSize"`       // size of a message in bytes
+	NumMsg        int           `json:"numMsg"`        // number of messages received from the client
+	Elapsed       time.Duration `json:"elapsed"`       // total time
+	AvgThroughput float64       `json:"avgThroughput"` // avg throughput in MB/s
+}
+
+// ThroughputClient holds parameters for the client side of throughput estimation.
 type ThroughputClient struct {
 	msgSize int
 	numMsg  int
 	timeout int
 }
 
-type ThroughputServer struct {
-	msgSize int
-}
-
-type ThroughputResult struct {
-	MsgSize       int           `json:"msgSize"`       // size of the messages in bytes
-	NumMsg        int           `json:"numMsg"`        // number of messages sent
-	Elapsed       time.Duration `json:"elapsed"`       // total time
-	AvgThroughput float64       `json:"avgThroughput"` // avg throughput in MB/s
-}
-
-func NewThroughputServer(msgSize int) ThroughputServer {
-	return ThroughputServer{
-		msgSize: msgSize,
-	}
-}
-
+// NewThroughputClient returns an instance of ThroughputClient. You can
+// call its Run method to start client for throughput estimation.
 func NewThroughputClient(msgSize, numMsg, timeout int) ThroughputClient {
 	return ThroughputClient{
 		msgSize: msgSize,
 		timeout: timeout,
 		numMsg:  numMsg,
 	}
-}
-
-func (s ThroughputServer) Run(l net.Listener) error {
-	conn, err := l.Accept()
-	if err != nil {
-		return err
-	}
-	defer conn.Close()
-	buf := make([]byte, s.msgSize)
-	for {
-		nread, err := conn.Read(buf)
-		if err != nil {
-			return err
-		}
-		if nread == 0 {
-			break
-		}
-	}
-
-	return nil
 }
 
 func (c ThroughputClient) Run(conn net.Conn) (*ThroughputResult, error) {
@@ -102,4 +77,42 @@ func (c ThroughputClient) Run(conn net.Conn) (*ThroughputResult, error) {
 		Elapsed:       elapsed,
 		AvgThroughput: float64(msgSent*c.msgSize*1000) / float64(elapsed.Nanoseconds()),
 	}, nil
+}
+
+// ThroughputServer holds parameters for the server side of throughput estimation.
+type ThroughputServer struct {
+	msgSize int
+}
+
+// NewThroughputServer creates a new instance of ThroughputServer.
+func NewThroughputServer(msgSize int) ThroughputServer {
+	return ThroughputServer{
+		msgSize: msgSize,
+	}
+}
+
+// Run waits to get connection from a client.
+func (s ThroughputServer) Run(l net.Listener) error {
+	conn, err := l.Accept()
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+	buf := make([]byte, s.msgSize)
+	k := 0
+	for {
+		nread, err := conn.Read(buf)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("got", k, nread, s.msgSize)
+		k++
+
+		if nread == 0 {
+			break
+		}
+	}
+
+	return nil
 }

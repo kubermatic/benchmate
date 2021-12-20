@@ -21,7 +21,12 @@ func TestName(t *testing.T) {
 		t.Errorf("Error making listener: %v", err)
 	}
 
-	go o.ThroughputServer().Run(l)
+	go func() {
+		err := o.ThroughputServer().Run(l)
+		if err != nil {
+			t.Error(err)
+		}
+	}()
 
 	time.Sleep(time.Second)
 

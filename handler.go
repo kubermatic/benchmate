@@ -31,7 +31,31 @@ type ThroughputRequest struct {
 	Client bool `json:"client"`
 }
 
-// ThroughputHandler runs client/server for throughput benchmarks.
+// ThroughputHandler can be added to HTTP mux. Like this,
+//	mux := http.NewServeMux()
+//	mux.HandleFunc("/benchmate/throughput", bmHandler.ThroughputHandler)
+//	log.Fatal(http.ListenAndServe(addr, mux))
+//It can be triggered to run client or server for throughput estimation.
+//  # curl http://localhost:8888/benchmate/throughput --data '
+//  {
+//	 "msgSize": 128000,
+//	 "numMsg": 10000,
+//	 "network": "tcp",
+//	 "addr": ":13500",
+//	 "timeout": 120000
+//  }
+//  '
+//
+//  # curl http://localhost:9999/benchmate/throughput --data '
+//  {
+//   	"msgSize": 128000,
+//  	"numMsg": 10000,
+//  	"network": "tcp",
+//  	"addr": ":13500",
+//  	"timeout": 120000,
+//  	"client": true
+//  }
+//  '
 func ThroughputHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {
@@ -98,7 +122,31 @@ type LatencyRequest struct {
 	Client bool `json:"client"`
 }
 
-// LatencyHandler runs client/server for latency benchmarks.
+// LatencyHandler can be added to HTTP mux. Like this,
+//	mux := http.NewServeMux()
+//	mux.HandleFunc("/benchmate/latency", bmHandler.LatencyHandler)
+//	log.Fatal(http.ListenAndServe(addr, mux))
+//It can be triggered to run client or server for latency estimation.
+//  # curl http://localhost:8888/benchmate/latency --data '
+//  {
+//	 "msgSize": 128,
+//	 "numMsg": 1000,
+//	 "network": "tcp",
+//	 "addr": ":13501",
+//	 "timeout": 120000
+//  }
+//  '
+//
+//  # curl http://localhost:9999/benchmate/latency --data '
+//  {
+//   	"msgSize": 128,
+//  	"numMsg": 1000,
+//  	"network": "tcp",
+//  	"addr": ":13501",
+//  	"timeout": 120000,
+//  	"client": true
+//  }
+//  '
 func LatencyHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := ioutil.ReadAll(r.Body)
 	if err != nil {

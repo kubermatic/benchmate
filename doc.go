@@ -14,6 +14,15 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package benchmate providers functions to construct and run client/server
-// for network benchmarking.
+// Package benchmate simplifies the construction of clients and servers
+// for network throughput/latency estimation. This lets you easily construct your
+// own tools instead of having to wrap existing tools and parse their command
+// line output.
+//
+// The package also contains HTTP handlers
+// (ThroughputHandler, LatencyHandler) that can be added to your programs
+// so that they can participate in network performance estimation. Like pprof [1]
+// but for networking.
+//
+// [1] https://pkg.go.dev/net/http/pprof
 package benchmate
