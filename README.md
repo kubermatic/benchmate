@@ -20,7 +20,6 @@ Demo:
 
 Commands from the demo:
 
-
 ```
 # run server 
 docker run --rm --network host quay.io/kubermatic-labs/benchmate
@@ -30,8 +29,6 @@ docker run --rm --network host quay.io/kubermatic-labs/benchmate
 # run client
 docker run --rm --network host quay.io/kubermatic-labs/benchmate -c
 ```
-
-
 
 #### Konnectivity-benchmate
 Client for benchmarking [Konnectivity](https://kubernetes.io/docs/tasks/extend-kubernetes/setup-konnectivity/). You can
@@ -53,7 +50,7 @@ server and on the other service to run the client.
 
 Demo:
 
-![./hack/bmserver-localhost.gif](./hack/bmserver-localhost.gif)
+![./hack/bmserver-localhost.gif](./hack/localhost-bmserver.gif)
 
 Commands from the demo:
 
