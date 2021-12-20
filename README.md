@@ -9,7 +9,7 @@ This repository contains
 3. HTTP handlers to quickly add network performance estimation to your services. See [example](https://github.com/kubermatic/benchmate/blob/master/cmd/bmserver/main.go).
 
 
-### [cmd/benchmate](cmd/benchmate)
+### cmd/benchmate
 `benchmate` measures latency and throughput between two nodes. You can run it on one node in the server mode and on
 another node in the client mode. If the the client and server can talk to each other, you should get the network
 performance stats at the client. This tool supports both TCP and Unix Domain sockets. Quickest way to try this out is using the docker image. 
@@ -19,11 +19,11 @@ performance stats at the client. This tool supports both TCP and Unix Domain soc
 ![./hacks/localhost-benchmate.gif](./hack/localhost-benchmate.gif) 
 
 
-### [cmd/konnectivity-benchmate](cmd/konnectivity-benchmate)
+### cmd/konnectivity-benchmate
 Client for benchmarking [Konnectivity](https://kubernetes.io/docs/tasks/extend-kubernetes/setup-konnectivity/). You can
 run benchmark server on one node and point `konnectivity-benchmate` to the UDS of konnectivity proxy server.
 
-### [cmd/bmserver](cmd/bmserver)
+### cmd/bmserver
 This program demonstrates how you can easily add network performance estimation to your application. For example, if two
 microservices are communicating over a network, you can measure the latency and throughput of the network. You register
 HTTP handlers like [pprof](https://pkg.go.dev/net/http/pprof). 
