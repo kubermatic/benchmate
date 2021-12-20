@@ -12,15 +12,25 @@ This repository contains
 #### Benchmate
 `benchmate` measures latency and throughput between two nodes. You can run it on one node in the server mode and on
 another node in the client mode. If the the client and server can talk to each other, you should get the network
-performance stats at the client. This tool supports both TCP and Unix Domain sockets. Quickest way to try this out is using the docker image. 
+performance stats at the client. This tool supports both TCP and Unix Domain sockets. Quickest way to try this out is using the docker image. If you are go programmer, you can build it yourself from `cmd/benchmate` directory.  
 
 Demo:
 
 ![./hacks/localhost-benchmate.gif](./hack/localhost-benchmate.gif) 
 
-Commands from the demo: 
-``` 
+Commands from the demo:
+
+
 ```
+# run server 
+docker run --rm --network host quay.io/kubermatic-labs/benchmate
+```
+
+```
+# run client
+docker run --rm --network host quay.io/kubermatic-labs/benchmate -c
+```
+
 
 
 #### Konnectivity-benchmate
