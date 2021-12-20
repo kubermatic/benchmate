@@ -14,13 +14,13 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//Toy program to demonstrate the usage of handlers LatencyHandler and ThroughputHandler.
+//A toy program to demonstrate the usage of handlers LatencyHandler and ThroughputHandler.
 //
 // Run one instance at 8888.
 //	#  ./bmserver --addr=:8888
 //Run another instance at 9999.
 //	#  ./bmserver --addr=:9999
-//Start latency server at 13501 by sending request to localhost:8888/benchmate/latency endpoint.
+//Start a latency server at 13501 by sending request to localhost:8888/benchmate/latency endpoint.
 //
 //	# curl http://localhost:8888/benchmate/latency --data '
 //	{
@@ -31,7 +31,7 @@ limitations under the License.
 //		"timeout": 120000
 //	}
 //	'
-//Start latency client by sending request to localhost:9999/benchmate/latency endpoint.
+//Start a latency client by sending request to localhost:9999/benchmate/latency endpoint.
 //
 //  # curl http://localhost:9999/benchmate/latency --data '
 //  {
@@ -50,9 +50,10 @@ package main
 
 import (
 	"flag"
-	bmHandler "github.com/kubermatic/benchmate"
 	"log"
 	"net/http"
+
+	"github.com/kubermatic/benchmate"
 )
 
 func main() {
@@ -61,7 +62,7 @@ func main() {
 	flag.Parse()
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/benchmate/throughput", bmHandler.ThroughputHandler)
-	mux.HandleFunc("/benchmate/latency", bmHandler.LatencyHandler)
+	mux.HandleFunc("/benchmate/throughput", benchmate.ThroughputHandler)
+	mux.HandleFunc("/benchmate/latency", benchmate.LatencyHandler)
 	log.Fatal(http.ListenAndServe(addr, mux))
 }

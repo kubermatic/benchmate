@@ -14,15 +14,31 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// This is only the client side of benchmate that work with konnectivity-proxy.
+// You can run it in the same pod as konnectivity-proxy with -proxy-uds
+// set to unix domain socket that konnectivity-proxy is listening on
+// and -node-ip set to ip addr of benchmate server. This benchmate
+// server should be reachable by some konnectivity-agent.
+//
+//  ./konnectivity-benchmate -node-ip=<server ip> -proxy-uds=/tmp/uds-socket
+//
+// Options:
+//	$ ./konnectivity-benchmate -h
+//	Usage of ./konnectivity-benchmate:
+//	-node-ip string
+//		ip of node where benchmate server is running (default "127.0.0.1")
+//	-proxy-uds string
+//		uds socket of konnectivity-proxy (default "/etc/kubernetes/konnectivity-server/konnectivity-server.socket")
 package main
 
 import (
 	"context"
 	"flag"
 	"fmt"
+	"net"
+
 	"github.com/kubermatic/benchmate"
 	"google.golang.org/grpc"
-	"net"
 	"sigs.k8s.io/apiserver-network-proxy/konnectivity-client/pkg/client"
 )
 

@@ -1,96 +1,30 @@
 # Benchmate
 
 ## Overview
-This repository contains various network benchmarking tools, packages that simplify construction of such tools and
-handlers to quickly add network benchmarking functionality to your services.
+This repository contains 
+1. Network latency, throughput estimation tools
+   - **benchmate**: iperf3, qperf like tool to estiamte network throughput, latency.
+   - **konnectivity-benchmate**: A client to measure throughput, latency of a [Konnectivity](https://kubernetes.io/docs/tasks/extend-kubernetes/setup-konnectivity/) setup.
+2. Package that simplify construction of such tools. Read [documentation](https://pkg.go.dev/github.com/kubermatic/benchmate/). 
+3. HTTP handlers to quickly add network performance estimation to your services. See [example](https://github.com/kubermatic/benchmate/blob/master/cmd/bmserver/main.go).
 
-## Tools
-
-There are three tools:
-- [benchmate](#cmdbenchmate) -- a tool to run network benchmarks. 
-- [konnectivity-benchmate](#cmdkonnectivity-benchmate)-- client for benchmarking Konnectivity using benchmate. 
-- [bmserver](#cmdbmserver) -- a toy. 
 
 ### [cmd/benchmate](cmd/benchmate)
 `benchmate` measures latency and throughput between two nodes. You can run it on one node in the server mode and on
 another node in the client mode. If the the client and server can talk to each other, you should get the network
-performance stats at the client. This tool supports both TCP and Unix Domain sockets. You can specify parameters 
-for the benchmark using json files via `--latOpt=<filename>` for latency options and `--tpOpt=<filename>` for throughput options. Read the docs for details of the supported parameters.  
+performance stats at the client. This tool supports both TCP and Unix Domain sockets. Quickest way to try this out is using the docker image. 
 
-**Run it on localhost:**
+**Demo**
 
 ![./hacks/localhost-benchmate.gif](./hack/localhost-benchmate.gif) 
-
-**Run on two nodes in a cluster using docker:**
-
-
-_On one node run server:_
-
-tpOpt.json:
-```
-{
-    "msgSize": 250000,
-    "numMsg": 10000,
-    "tcpAddress": ":13500",
-    "timeout": 120000
-}
-```
-
-latOpt.json:
-```
-{
-    "msgSize": 128,
-    "numPings": 1000,
-    "tcpAddress": ":13501",
-    "timeout": 120000
-}
-```
-Command:
-```
-docker run -it --rm --network host -v $(pwd):/opts \
-    quay.io/kubermatic-labs/benchmate:latest \
-    --latOpt=/opts/latOpt.json \
-    --tpOpt=/opts/tpOpt.json
-```
-
-_On another node run client:_
-
-tpOpt.json:
-```
-{
-    "msgSize": 250000,
-    "numMsg": 10000,
-    "tcpAddress": "<IP OF SERVER HERE>:13500",
-    "clientPort": 13503,
-    "timeout": 120000
-}
-```
-
-latOpt.json:
-```
-{
-    "msgSize": 128,
-    "numPings": 1000,
-    "tcpAddress": "<IP OF SERVER HERE>:13501",
-    "timeout": 120000
-}
-```
-Command:
-```
-docker run -it --rm --network host -v $(pwd):/opts \
-    quay.io/kubermatic-labs/benchmate:latest -c \
-    --latOpt=/opts/latOpt.json \
-    --tpOpt=/opts/tpOpt.json
-```
-
 
 
 ### [cmd/konnectivity-benchmate](cmd/konnectivity-benchmate)
 Client for benchmarking [Konnectivity](https://kubernetes.io/docs/tasks/extend-kubernetes/setup-konnectivity/). You can
-run benchmark server on one node and point `konnectivity-benchmate` UDS of konnectivity proxy server.
+run benchmark server on one node and point `konnectivity-benchmate` to the UDS of konnectivity proxy server.
 
 ### [cmd/bmserver](cmd/bmserver)
-This program demonstrates how you can easily add network perf measurement to your application. For example, if two
+This program demonstrates how you can easily add network performance estimation to your application. For example, if two
 microservices are communicating over a network, you can measure the latency and throughput of the network. You register
 HTTP handlers like [pprof](https://pkg.go.dev/net/http/pprof). 
 ```go
@@ -103,35 +37,38 @@ HTTP handlers like [pprof](https://pkg.go.dev/net/http/pprof).
 You can then trigger handler on one service to run the
 server and on the other service to run the client.
 
-**Demo on localhost:**
+**Demo**
 
 ![./hack/bmserver-localhost.gif](./hack/bmserver-localhost.gif)
 
 Commands for you to try. There are more in [curls.txt](./hack/curls.txt).
 ```
-$ curl http://localhost:8888/benchmate/latency --data '
+# run the latency server 
+curl http://localhost:8888/benchmate/latency --data '
 {
     "msgSize": 128,
-    "numPings": 1000,
-    "tcpAddress": ":13501",
+    "numMsg": 1000,
+    "network": "tcp",
+    "addr": ":13501",
     "timeout": 120000
 }
 '
+``` 
 
-$ curl http://localhost:9999/benchmate/latency --data '
+```
+# run the latency client 
+curl http://localhost:9999/benchmate/latency --data '
 {
     "msgSize": 128,
-    "numPings": 1000,
-    "tcpAddress": ":13501",
-    "timeout": 120000,
-    "client": true
+    "numMsg": 1000,
+    "network": "tcp",
+    "addr": ":13501",
+    "timeout": 120000
 }
 '
 ```
 
-## Packages
-Packages `throughput` and `latency` contain functions that allow construction of clients and servers to benchmark uds,
-tcp sockets for variety of setups.
+
 
 ## Troubleshooting
 

@@ -14,55 +14,55 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// This is a program that can be used to benchmark the performance of the
-// network. You can measure latency and throughput of the network.
+// Using benchmate you can estimate latency and throughput of a network.
 //
-// You run server somewhere lime
+// You run the server somewhere like
 //	 $ benchmate
-//
-// You run client somewhere like
-//
+// You run the client somewhere like
 // 	$ benchmate -c
 //
-// As long as client can talk to the server, you can measure the latency and throughput.
+// As long as the client can talk to the server, you will get estimates at the client.
 //
-// You can configure the details using json files and supply them as arguments.
-//  $ benchmate -c --latOpt=latOpt.json --tpOpt=tpOpt.json
-// This will read the the benchmark parameters such as message size from the json
-// files and use them.
+//	Usage of ./benchmate:
+//		-addr string
+//			set the address (default ":12345")
+//		-c	set the flag to run in client mode. Default is server mode.
+//		-clientPort int
+//			set the client port (valid only in client mode)
+//		-lat
+//			set the flag to run in latency mode and specify the options on command line
+//		-latOpt string
+//			set the latency options using json file
+//		-msgSize int
+//			set the message size (default 1024)
+//		-network string
+//			set the network (tcp or unix) (default "tcp")
+//		-numMsg int
+//			set the number of messages to exchange (default 1000)
+//		-timeout int
+//			set the timeout (ms) (default 120000)
+//		-tp
+//			set the flag to run in throughput mode and specify the options on command line
+//		-tpOpt string
+//			set the throughput options using json file
 //
-// Sample json files can be found i the hack/examples folder.
+// You can specify options using a json files using --tpOpt, --latOpt parameters.
+// Valid format of the json files is here http://pkg.go.dev/github.com/kubermatic/benchmate/#Options
 //
-// benchmate is built using the library in https://pkg.go.dev/github.com/kubermatic/benchmate/pkg/latency/ and pkg/throughput.
-//
-// You can use the library to add network benchmarking to your application.
 package main
 
 import (
 	"encoding/json"
 	"flag"
-	"github.com/kubermatic/benchmate"
 	"io"
 	"io/ioutil"
 	"log"
 	"net"
 	"sync"
 	"time"
+
+	"github.com/kubermatic/benchmate"
 )
-
-// benchmate --latOpt=latOpt.json --tpOpt=tpOpt.json
-// This will run servers for both latency and throughput.
-// benchmate -c --latOpt=latOpt.json --tpOpt=tpOpt.json
-// This will run clients for both latency and throughput.
-// benchmate -c --latOpt=latOpt.json
-// This will run clients for latency only.
-// benchmate -c --tpOpt=tpOpt.json
-// This will run clients for throughput only.
-
-// If no options are specified, it will run both latency and throughput with default
-// options.
-// When any one of --latOpts, --tpOpts is specified all the command line options
-// are ignored.
 
 func main() {
 	log.SetFlags(0)
@@ -85,8 +85,8 @@ func main() {
 
 	flag.BoolVar(&c, "c", false, "set the flag to run in client mode. Default is server mode. ")
 
-	flag.StringVar(&latOptFile, "latOptFile", "", "set the latency options using json file")
-	flag.StringVar(&tpOptFile, "tpOptFile", "", "set the throughput options using json file")
+	flag.StringVar(&latOptFile, "latOpt", "", "set the latency options using json file")
+	flag.StringVar(&tpOptFile, "tpOpt", "", "set the throughput options using json file")
 
 	flag.BoolVar(&lat, "lat", false, "set the flag to run in latency mode and specify the options on command line")
 	flag.BoolVar(&tp, "tp", false, "set the flag to run in throughput mode and specify the options on command line")
