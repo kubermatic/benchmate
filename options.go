@@ -26,7 +26,7 @@ type Options struct {
 	Timeout    int    `json:"timeout"`    // in milliseconds
 }
 
-// LatencyServer returns a LatencyServer configured with the options.
+// LatencyServer returns a LatencyServer instance configured with the options.
 func (o Options) LatencyServer() LatencyServer {
 	return LatencyServer{
 		msgSize: o.MsgSize,
@@ -34,7 +34,7 @@ func (o Options) LatencyServer() LatencyServer {
 	}
 }
 
-// LatencyClient returns a LatencyClient configured with the options.
+// LatencyClient returns a LatencyClient instance configured with the options.
 func (o Options) LatencyClient() LatencyClient {
 	return LatencyClient{
 		msgSize: o.MsgSize,
@@ -43,14 +43,14 @@ func (o Options) LatencyClient() LatencyClient {
 	}
 }
 
-// ThroughputServer returns a ThroughputServer configured with the options.
+// ThroughputServer returns a ThroughputServer instance configured with the options.
 func (o Options) ThroughputServer() ThroughputServer {
 	return ThroughputServer{
 		msgSize: o.MsgSize,
 	}
 }
 
-// ThroughputClient returns a ThroughputClient configured with the options.
+// ThroughputClient returns a ThroughputClient instance configured with the options.
 func (o Options) ThroughputClient() ThroughputClient {
 	return ThroughputClient{
 		msgSize: o.MsgSize,
@@ -59,7 +59,15 @@ func (o Options) ThroughputClient() ThroughputClient {
 	}
 }
 
-// DefaultLatencyOptions
+// DefaultLatencyOptions are
+//	{
+//		MsgSize:    128,
+//		NumMsg:     10000,
+//		Addr:       ":13501",
+//		Network:    "tcp",
+//		ClientPort: 0,
+//		Timeout:    120000,
+//	}
 func DefaultLatencyOptions() Options {
 	return Options{
 		MsgSize:    128,
@@ -71,7 +79,15 @@ func DefaultLatencyOptions() Options {
 	}
 }
 
-// DefaultThroughputOptions
+// DefaultThroughputOptions are
+//	{
+//		MsgSize:    256 * 1024,
+//		NumMsg:     10000,
+//		Addr:       ":13500",
+//		Network:    "tcp",
+//		ClientPort: 0,
+//		Timeout:    120000,
+//	}
 func DefaultThroughputOptions() Options {
 	return Options{
 		MsgSize:    256 * 1024,
