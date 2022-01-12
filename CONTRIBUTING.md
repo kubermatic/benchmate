@@ -12,7 +12,7 @@ Origin (DCO). This document was created by the Linux Kernel community and is a
 simple statement that you, as a contributor, have the legal right to make the
 contribution. See the [DCO](DCO) file for details.
 
-Any copyright notices in this repo should specify the authors as "the Kubermatic XXX project contributors".
+Any copyright notices in this repo should specify the authors as "the Kubermatic Benchmate project contributors".
 
 To sign your work, just add a line like this at the end of your commit message:
 
@@ -71,7 +71,7 @@ By making a contribution to this project, I certify that:
 
 ## Email and Chat
 
-The XXX project currently uses the general Kubermatic email list and Slack channel:
+The Benchmate project currently uses the general Kubermatic email list and Slack channel:
 - Email: [kubermatic-dev](https://groups.google.com/forum/#!forum/kubermatic-dev)
 - Slack: #[Slack](http://slack.kubermatic.io/) on Slack
 
