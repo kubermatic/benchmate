@@ -1,0 +1,41 @@
+
+curl http://localhost:8888/benchmate/latency --data '
+{
+    "msgSize": 128,
+    "numMsg": 1000,
+    "network": "tcp",
+    "addr": ":13501",
+    "timeout": 120000
+}
+'
+
+curl http://localhost:9999/benchmate/latency --data '
+{
+    "msgSize": 128,
+    "numMsg": 1000,
+    "network": "tcp",
+    "addr": ":13501",
+    "timeout": 120000
+}
+'
+
+curl http://localhost:8888/benchmate/throughput --data '
+{
+    "msgSize": 128000,
+    "numMsg": 10000,
+    "network": "tcp",
+    "addr": ":13501",
+    "timeout": 120000
+}
+'
+
+curl http://localhost:9999/benchmate/throughput --data '
+{
+    "msgSize": 128000,
+    "numMsg": 10000,
+    "network": "tcp",
+    "addr": ":13501",
+    "timeout": 120000,
+    "client": true
+}
+'
