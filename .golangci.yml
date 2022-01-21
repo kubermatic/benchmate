@@ -24,7 +24,6 @@ linters:
     - errcheck
     - goconst
     - gocritic
-    - gocyclo
     - gofmt
     - gosimple
     - govet

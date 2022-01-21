@@ -51,7 +51,7 @@ func NewThroughputServer(msgSize int) ThroughputServer {
 //	l, _ := net.Listen("tcp", ":8888")
 //	s.Run(l)
 //
-//This will run the server at unix domain socket.
+// This will run the server at unix domain socket.
 //
 //	l, _ := net.Listen("unix", "/tmp/tp-srv")
 //	s.Run(l)
