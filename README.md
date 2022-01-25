@@ -3,9 +3,9 @@
 ## Overview
 This repository contains 
 1. Network latency, throughput estimation tools
-   - `benchmate`: iperf3, qperf like tool to estiamte network throughput, latency.
+   - `benchmate`: iperf3, qperf like tool to estimate network throughput, latency.
    - `konnectivity-benchmate`: A client to measure throughput, latency of a [Konnectivity](https://kubernetes.io/docs/tasks/extend-kubernetes/setup-konnectivity/) setup.
-2. Package that simplify construction of such tools. Read [documentation](https://pkg.go.dev/github.com/kubermatic/benchmate/). 
+2. Package to simplify construction of such tools. Read [documentation](https://pkg.go.dev/github.com/kubermatic/benchmate/). 
 3. HTTP handlers to quickly add network performance estimation to your services. See [example](https://github.com/kubermatic/benchmate/blob/master/cmd/bmserver/main.go).
 
 
