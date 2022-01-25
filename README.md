@@ -16,7 +16,7 @@ performance stats at the client. This tool supports both TCP and Unix Domain soc
 
 Demo:
 
-![./hacks/localhost-benchmate.gif](./hack/localhost-benchmate.gif) 
+![./hacks/localhost-benchmate.gif](./hack/localhost-benchmate.png) 
 
 Commands from the demo:
 
@@ -50,7 +50,7 @@ server and on the other service to run the client.
 
 Demo:
 
-![./hack/bmserver-localhost.gif](./hack/localhost-bmserver.gif)
+![./hack/bmserver-localhost.gif](./hack/localhost-bmserver.png)
 
 Commands from the demo:
 
