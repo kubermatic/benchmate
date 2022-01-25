@@ -14,38 +14,38 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-//A toy program to demonstrate the usage of handlers LatencyHandler and ThroughputHandler.
+// A toy program to demonstrate the usage of handlers LatencyHandler and ThroughputHandler.
 //
-// Run one instance at 8888.
-//	#  ./bmserver --addr=:8888
-//Run another instance at 9999.
-//	#  ./bmserver --addr=:9999
-//Start a latency server at 13501 by sending request to localhost:8888/benchmate/latency endpoint.
+//  Run one instance at 8888.
+// 	#  ./bmserver --addr=:8888
+// Run another instance at 9999.
+// 	#  ./bmserver --addr=:9999
+// Start a latency server at 13501 by sending request to localhost:8888/benchmate/latency endpoint.
 //
-//	# curl http://localhost:8888/benchmate/latency --data '
-//	{
-//		"msgSize": 128,
-//		"numMsg": 1000,
-//		"network": "tcp",
-//		"addr": ":13501",
-//		"timeout": 120000
-//	}
-//	'
-//Start a latency client by sending request to localhost:9999/benchmate/latency endpoint.
+// 	# curl http:// localhost:8888/benchmate/latency --data '
+// 	{
+// 		"msgSize": 128,
+// 		"numMsg": 1000,
+// 		"network": "tcp",
+// 		"addr": ":13501",
+// 		"timeout": 120000
+// 	}
+// 	'
+// Start a latency client by sending request to localhost:9999/benchmate/latency endpoint.
 //
-//  # curl http://localhost:9999/benchmate/latency --data '
-//  {
-//   	"msgSize": 128,
-//  	"numMsg": 1000,
-//  	"network": "tcp",
-//  	"addr": ":13501",
-//  	"timeout": 120000,
-//  	"client": true
-//  }
-//  '
-//  {"elapsedTime":29707159,"numPings":2000,"avgLatency":14853}
+//   # curl http:// localhost:9999/benchmate/latency --data '
+//   {
+//    	"msgSize": 128,
+//   	"numMsg": 1000,
+//   	"network": "tcp",
+//   	"addr": ":13501",
+//   	"timeout": 120000,
+//   	"client": true
+//   }
+//   '
+//   {"elapsedTime":29707159,"numPings":2000,"avgLatency":14853}
 //
-//Results of the benchmark run are printed to stdout. In the above example, the latency is 14853ns.
+// Results of the benchmark run are printed to stdout. In the above example, the latency is 14853ns.
 package main
 
 import (

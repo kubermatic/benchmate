@@ -161,7 +161,7 @@ func main() {
 		log.Fatal("cannot run both latency and throughput with command line flags provide options with JSON files using --latOpts, --tpOpts flags instead.")
 	}
 
-	// run both benchmarks with defualt options when nothing is specified
+	// run both benchmarks with default options when nothing is specified
 	if !lat && !tp {
 		latOpts := benchmate.DefaultLatencyOptions()
 		tpOpts := benchmate.DefaultThroughputOptions()

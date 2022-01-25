@@ -36,7 +36,7 @@ type ThroughputRequest struct {
 //	mux := http.NewServeMux()
 //	mux.HandleFunc("/benchmate/throughput", bmHandler.ThroughputHandler)
 //	log.Fatal(http.ListenAndServe(addr, mux))
-//It can be triggered to run client or server for throughput estimation.
+// It can be triggered to run client or server for throughput estimation.
 //  # curl http://localhost:8888/benchmate/throughput --data '
 //  {
 //	 "msgSize": 128000,
@@ -128,7 +128,7 @@ type LatencyRequest struct {
 //	mux := http.NewServeMux()
 //	mux.HandleFunc("/benchmate/latency", bmHandler.LatencyHandler)
 //	log.Fatal(http.ListenAndServe(addr, mux))
-//It can be triggered to run client or server for latency estimation.
+// It can be triggered to run client or server for latency estimation.
 //  # curl http://localhost:8888/benchmate/latency --data '
 //  {
 //	 "msgSize": 128,

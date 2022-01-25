@@ -21,7 +21,9 @@ func TestLatency(t *testing.T) {
 		t.Errorf("Error making listener: %v", err)
 	}
 
-	go o.LatencyServer().Run(l)
+	go func() {
+		_ = o.LatencyServer().Run(l)
+	}()
 
 	time.Sleep(time.Second)
 
